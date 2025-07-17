@@ -1,0 +1,43 @@
+@model SD_Sinema.Web.Models.UserViewModel
+
+@{
+    ViewData["Title"] = "Kullanıcı Sil";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Kullanıcı Sil</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <h4>Bu kullanıcıyı silmek istediğinizden emin misiniz?</h4>
+                    </div>
+                    
+                    <dl class="row">
+                        <dt class="col-sm-3">Ad:</dt>
+                        <dd class="col-sm-9">@Model.FirstName</dd>
+
+                        <dt class="col-sm-3">Soyad:</dt>
+                        <dd class="col-sm-9">@Model.LastName</dd>
+
+                        <dt class="col-sm-3">E-posta:</dt>
+                        <dd class="col-sm-9">@Model.Email</dd>
+
+                        <dt class="col-sm-3">Telefon:</dt>
+                        <dd class="col-sm-9">@Model.Phone</dd>
+                    </dl>
+                </div>
+                <div class="card-footer">
+                    <form asp-action="Delete" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <button type="submit" class="btn btn-danger">Sil</button>
+                        <a asp-action="Index" class="btn btn-secondary">İptal</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

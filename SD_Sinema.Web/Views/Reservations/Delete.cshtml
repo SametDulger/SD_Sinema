@@ -1,0 +1,49 @@
+@model SD_Sinema.Web.Models.ReservationViewModel
+
+@{
+    ViewData["Title"] = "Rezervasyon Sil";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Rezervasyon Sil</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <h4>Bu rezervasyonu silmek istediğinizden emin misiniz?</h4>
+                    </div>
+                    
+                    <dl class="row">
+                        <dt class="col-sm-3">Kullanıcı:</dt>
+                        <dd class="col-sm-9">@Model.UserName</dd>
+
+                        <dt class="col-sm-3">Seans:</dt>
+                        <dd class="col-sm-9">@Model.SessionInfo</dd>
+
+                        <dt class="col-sm-3">Rezervasyon Tarihi:</dt>
+                        <dd class="col-sm-9">@Model.ReservationDate.ToString("dd/MM/yyyy")</dd>
+
+                        <dt class="col-sm-3">Koltuk Sayısı:</dt>
+                        <dd class="col-sm-9">@Model.SeatCount</dd>
+
+                        <dt class="col-sm-3">Toplam Fiyat:</dt>
+                        <dd class="col-sm-9">@Model.TotalPrice.ToString("C")</dd>
+
+                        <dt class="col-sm-3">Durum:</dt>
+                        <dd class="col-sm-9">@Model.Status</dd>
+                    </dl>
+                </div>
+                <div class="card-footer">
+                    <form asp-action="Delete" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <button type="submit" class="btn btn-danger">Sil</button>
+                        <a asp-action="Index" class="btn btn-secondary">İptal</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

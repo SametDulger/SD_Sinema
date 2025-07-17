@@ -1,0 +1,43 @@
+@model List<SD_Sinema.Web.Models.MovieViewModel>
+
+@{
+    ViewData["Title"] = "Ana Sayfa";
+}
+
+<div class="text-center">
+    <h1 class="display-4">SD Sinema'ya Hoş Geldiniz</h1>
+    <p>En yeni filmleri keşfedin ve biletinizi hemen alın!</p>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <h2>Vizyondaki Filmler</h2>
+        <div class="row">
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var movie in Model)
+                {
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 300px;">
+                                <span class="text-white">Poster Yok</span>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">@movie.Title</h5>
+                                <p class="card-text">@(movie.Description.Length > 100 ? movie.Description.Substring(0, 100) + "..." : movie.Description)</p>
+                                <p class="card-text"><small class="text-muted">Süre: @movie.Duration dakika | Tür: @movie.Genre</small></p>
+                                <a href="@Url.Action("Details", "Movies", new { id = movie.Id })" class="btn btn-primary">Detaylar</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12">
+                    <p class="text-center">Henüz vizyonda film bulunmuyor.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div> 

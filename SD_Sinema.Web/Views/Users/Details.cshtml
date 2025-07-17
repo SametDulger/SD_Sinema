@@ -1,0 +1,39 @@
+@model SD_Sinema.Web.Models.UserViewModel
+
+@{
+    ViewData["Title"] = "Kullanıcı Detayları";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Kullanıcı Detayları</h3>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Ad:</dt>
+                        <dd class="col-sm-9">@Model.FirstName</dd>
+
+                        <dt class="col-sm-3">Soyad:</dt>
+                        <dd class="col-sm-9">@Model.LastName</dd>
+
+                        <dt class="col-sm-3">E-posta:</dt>
+                        <dd class="col-sm-9">@Model.Email</dd>
+
+                        <dt class="col-sm-3">Telefon:</dt>
+                        <dd class="col-sm-9">@Model.Phone</dd>
+
+                        <dt class="col-sm-3">Kayıt Tarihi:</dt>
+                        <dd class="col-sm-9">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
+                    </dl>
+                </div>
+                <div class="card-footer">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Düzenle</a>
+                    <a asp-action="Index" class="btn btn-secondary">Geri Dön</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

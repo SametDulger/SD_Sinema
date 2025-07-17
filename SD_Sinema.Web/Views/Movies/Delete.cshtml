@@ -1,0 +1,46 @@
+@model SD_Sinema.Web.Models.MovieViewModel
+
+@{
+    ViewData["Title"] = "Film Sil";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Film Sil</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <h4>Bu filmi silmek istediğinizden emin misiniz?</h4>
+                    </div>
+                    
+                    <dl class="row">
+                        <dt class="col-sm-3">Film Adı:</dt>
+                        <dd class="col-sm-9">@Model.Title</dd>
+
+                        <dt class="col-sm-3">Açıklama:</dt>
+                        <dd class="col-sm-9">@Model.Description</dd>
+
+                        <dt class="col-sm-3">Süre:</dt>
+                        <dd class="col-sm-9">@Model.Duration dakika</dd>
+
+                        <dt class="col-sm-3">Yayın Yılı:</dt>
+                        <dd class="col-sm-9">@Model.ReleaseYear</dd>
+
+                        <dt class="col-sm-3">Tür:</dt>
+                        <dd class="col-sm-9">@Model.Genre</dd>
+                    </dl>
+                </div>
+                <div class="card-footer">
+                    <form asp-action="Delete" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <button type="submit" class="btn btn-danger">Sil</button>
+                        <a asp-action="Index" class="btn btn-secondary">İptal</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

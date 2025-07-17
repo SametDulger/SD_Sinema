@@ -1,0 +1,72 @@
+@model SD_Sinema.Web.Models.TicketViewModel
+
+@{
+    ViewData["Title"] = "Bilet Düzenle";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Bilet Düzenle</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="CreatedAt" />
+                        
+                        <div class="form-group mb-3">
+                            <label asp-for="ReservationId" class="form-label">Rezervasyon</label>
+                            <select asp-for="ReservationId" class="form-select" asp-items="@ViewBag.Reservations">
+                                <option value="">Rezervasyon Seçin</option>
+                            </select>
+                            <span asp-validation-for="ReservationId" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="TicketTypeId" class="form-label">Bilet Türü</label>
+                            <select asp-for="TicketTypeId" class="form-select" asp-items="@ViewBag.TicketTypes">
+                                <option value="">Bilet Türü Seçin</option>
+                            </select>
+                            <span asp-validation-for="TicketTypeId" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="SeatId" class="form-label">Koltuk</label>
+                            <select asp-for="SeatId" class="form-select" asp-items="@ViewBag.Seats">
+                                <option value="">Koltuk Seçin</option>
+                            </select>
+                            <span asp-validation-for="SeatId" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Price" class="form-label">Fiyat</label>
+                            <input asp-for="Price" class="form-control" type="number" step="0.01" />
+                            <span asp-validation-for="Price" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Status" class="form-label">Durum</label>
+                            <select asp-for="Status" class="form-select">
+                                <option value="Aktif">Aktif</option>
+                                <option value="Kullanıldı">Kullanıldı</option>
+                                <option value="İptal Edildi">İptal Edildi</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Kaydet</button>
+                            <a asp-action="Index" class="btn btn-secondary">İptal</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 
