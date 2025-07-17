@@ -1,0 +1,53 @@
+# .NET ve Visual Studio
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+.vscode/
+.idea/
+*.sln.iml
+
+# Build çıktıları
+*.dll
+*.exe
+*.app
+*.log
+*.pdb
+*.cache
+*.dbmdl
+*.bak
+*.tmp
+*.temp
+*.pidb
+*.svclog
+*.ide
+*.sdf
+*.userprefs
+*.ncb
+*.aps
+*.opensdf
+*.tlog
+*.vspscc
+*.vssscc
+
+# Entity Framework
+Migrations/*Designer.cs
+Migrations/*Snapshot.cs
+Migrations/*ModelSnapshot.cs
+
+# Kişisel ve sistem dosyaları
+.DS_Store
+Thumbs.db
+
+# Publish çıktısı
+publish/
+
+# Test, yedek, özel not dosyaları
+*.test
+*.backup
+*.bak
+*.old
+*.orig

@@ -1,0 +1,42 @@
+@model SD_Sinema.Web.Models.SessionViewModel
+
+@{
+    ViewData["Title"] = "Seans Detayları";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Seans Detayları</h3>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Film:</dt>
+                        <dd class="col-sm-9">@Model.MovieTitle</dd>
+
+                        <dt class="col-sm-3">Salon:</dt>
+                        <dd class="col-sm-9">@Model.SalonName</dd>
+
+                        <dt class="col-sm-3">Başlangıç Zamanı:</dt>
+                        <dd class="col-sm-9">@Model.StartTime.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                        <dt class="col-sm-3">Fiyat:</dt>
+                        <dd class="col-sm-9">@Model.Price.ToString("C")</dd>
+
+                        <dt class="col-sm-3">Durum:</dt>
+                        <dd class="col-sm-9">@(Model.IsActive ? "Aktif" : "Pasif")</dd>
+
+                        <dt class="col-sm-3">Oluşturulma Tarihi:</dt>
+                        <dd class="col-sm-9">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
+                    </dl>
+                </div>
+                <div class="card-footer">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Düzenle</a>
+                    <a asp-action="Index" class="btn btn-secondary">Geri Dön</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

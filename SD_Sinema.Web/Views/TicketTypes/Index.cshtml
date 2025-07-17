@@ -1,0 +1,35 @@
+@model IEnumerable<SD_Sinema.Web.Models.TicketTypeViewModel>
+
+@{
+    ViewData["Title"] = "Bilet Türleri";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Bilet Türleri</h2>
+        <a asp-action="Create" class="btn btn-primary">Yeni Bilet Türü Ekle</a>
+    </div>
+
+    <div class="row">
+        @foreach (var ticketType in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">@ticketType.Name</h5>
+                        <p class="card-text">@ticketType.Description</p>
+                        <p class="card-text"><strong>Fiyat:</strong> @ticketType.Price.ToString("C")</p>
+                        <p class="card-text"><small class="text-muted">Durum: @(ticketType.IsActive ? "Aktif" : "Pasif")</small></p>
+                    </div>
+                    <div class="card-footer">
+                        <div class="btn-group w-100" role="group">
+                            <a asp-action="Details" asp-route-id="@ticketType.Id" class="btn btn-outline-primary btn-sm">Detay</a>
+                            <a asp-action="Edit" asp-route-id="@ticketType.Id" class="btn btn-outline-warning btn-sm">Düzenle</a>
+                            <a asp-action="Delete" asp-route-id="@ticketType.Id" class="btn btn-outline-danger btn-sm">Sil</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div> 

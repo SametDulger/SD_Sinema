@@ -1,0 +1,45 @@
+@model SD_Sinema.Web.Models.ReservationViewModel
+
+@{
+    ViewData["Title"] = "Rezervasyon Detayları";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Rezervasyon Detayları</h3>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Kullanıcı:</dt>
+                        <dd class="col-sm-9">@Model.UserName</dd>
+
+                        <dt class="col-sm-3">Seans:</dt>
+                        <dd class="col-sm-9">@Model.SessionInfo</dd>
+
+                        <dt class="col-sm-3">Rezervasyon Tarihi:</dt>
+                        <dd class="col-sm-9">@Model.ReservationDate.ToString("dd/MM/yyyy")</dd>
+
+                        <dt class="col-sm-3">Koltuk Sayısı:</dt>
+                        <dd class="col-sm-9">@Model.SeatCount</dd>
+
+                        <dt class="col-sm-3">Toplam Fiyat:</dt>
+                        <dd class="col-sm-9">@Model.TotalPrice.ToString("C")</dd>
+
+                        <dt class="col-sm-3">Durum:</dt>
+                        <dd class="col-sm-9">@Model.Status</dd>
+
+                        <dt class="col-sm-3">Oluşturulma Tarihi:</dt>
+                        <dd class="col-sm-9">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
+                    </dl>
+                </div>
+                <div class="card-footer">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Düzenle</a>
+                    <a asp-action="Index" class="btn btn-secondary">Geri Dön</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 
