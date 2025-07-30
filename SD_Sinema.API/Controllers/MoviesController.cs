@@ -42,6 +42,9 @@ namespace SD_Sinema.API.Controllers
         [HttpPost]
         public async Task<ActionResult<MovieDto>> Create(CreateMovieDto createMovieDto)
         {
+            if (createMovieDto == null)
+                return BadRequest("Film bilgileri boş olamaz.");
+
             try
             {
                 var movie = await _movieService.CreateAsync(createMovieDto);
@@ -56,6 +59,9 @@ namespace SD_Sinema.API.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<MovieDto>> Update(int id, UpdateMovieDto updateMovieDto)
         {
+            if (updateMovieDto == null)
+                return BadRequest("Film bilgileri boş olamaz.");
+
             try
             {
                 var movie = await _movieService.UpdateAsync(id, updateMovieDto);

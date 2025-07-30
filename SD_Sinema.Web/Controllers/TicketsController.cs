@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using SD_Sinema.Business.DTOs;
 using SD_Sinema.Web.Models;
+using SD_Sinema.Web.Models.DTOs;
 using System.Text;
 
 namespace SD_Sinema.Web.Controllers
@@ -204,6 +204,9 @@ namespace SD_Sinema.Web.Controllers
                     var content = await response.Content.ReadAsStringAsync();
                     var ticketDto = JsonConvert.DeserializeObject<TicketDto>(content);
                     
+                    if (ticketDto == null)
+                        return NotFound();
+                    
                     var ticketViewModel = new TicketViewModel
                     {
                         Id = ticketDto.Id,
@@ -213,9 +216,9 @@ namespace SD_Sinema.Web.Controllers
                         Price = ticketDto.Price,
                         Status = ticketDto.Status,
                         CreatedAt = ticketDto.CreatedDate,
-                        ReservationInfo = $"{ticketDto.MovieTitle} - {ticketDto.SalonName}",
-                        TicketTypeName = ticketDto.TicketTypeName,
-                        SeatInfo = ticketDto.SeatInfo
+                        ReservationInfo = $"{(ticketDto.MovieTitle ?? string.Empty)} - {(ticketDto.SalonName ?? string.Empty)}",
+                        TicketTypeName = ticketDto.TicketTypeName ?? string.Empty,
+                        SeatInfo = ticketDto.SeatInfo ?? string.Empty
                     };
 
                     // Rezervasyon listesini yükle

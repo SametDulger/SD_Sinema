@@ -27,6 +27,9 @@ namespace SD_Sinema.Business.Services
 
         public async Task<MovieDto> CreateAsync(CreateMovieDto createMovieDto)
         {
+            if (createMovieDto == null)
+                throw new ArgumentNullException(nameof(createMovieDto));
+
             var movie = new Movie
             {
                 Title = createMovieDto.Title,
@@ -50,6 +53,9 @@ namespace SD_Sinema.Business.Services
 
         public async Task<MovieDto> UpdateAsync(int id, UpdateMovieDto updateMovieDto)
         {
+            if (updateMovieDto == null)
+                throw new ArgumentNullException(nameof(updateMovieDto));
+
             var movie = await _unitOfWork.Movies.GetByIdAsync(id);
             if (movie == null)
                 throw new InvalidOperationException("Film bulunamadı.");

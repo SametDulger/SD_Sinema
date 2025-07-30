@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using SD_Sinema.Business.DTOs;
 using SD_Sinema.Web.Models;
+using SD_Sinema.Web.Models.DTOs;
 using System.Text;
 
 namespace SD_Sinema.Web.Controllers

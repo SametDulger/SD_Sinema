@@ -29,6 +29,9 @@ namespace SD_Sinema.Business.Services
 
         public async Task<UserDto> CreateAsync(CreateUserDto createUserDto)
         {
+            if (createUserDto == null)
+                throw new ArgumentNullException(nameof(createUserDto));
+
             if (await EmailExistsAsync(createUserDto.Email))
                 throw new InvalidOperationException("Bu email adresi zaten kullanılıyor.");
 
@@ -52,6 +55,9 @@ namespace SD_Sinema.Business.Services
 
         public async Task<UserDto> UpdateAsync(int id, UpdateUserDto updateUserDto)
         {
+            if (updateUserDto == null)
+                throw new ArgumentNullException(nameof(updateUserDto));
+
             var user = await _unitOfWork.Users.GetByIdAsync(id);
             if (user == null)
                 throw new InvalidOperationException("Kullanıcı bulunamadı.");
