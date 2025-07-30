@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="12.0.1" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SD_Sinema.Core\SD_Sinema.Core.csproj" />
     <ProjectReference Include="..\SD_Sinema.Data\SD_Sinema.Data.csproj" />
   </ItemGroup>

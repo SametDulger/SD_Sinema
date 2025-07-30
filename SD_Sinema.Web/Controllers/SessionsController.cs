@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using SD_Sinema.Business.DTOs;
 using SD_Sinema.Web.Models;
+using SD_Sinema.Web.Models.DTOs;
 using System.Text;
 
 namespace SD_Sinema.Web.Controllers
@@ -173,6 +173,9 @@ namespace SD_Sinema.Web.Controllers
                     var content = await response.Content.ReadAsStringAsync();
                     var sessionDto = JsonConvert.DeserializeObject<SessionDto>(content);
                     
+                    if (sessionDto == null)
+                        return NotFound();
+                    
                     var sessionViewModel = new SessionViewModel
                     {
                         Id = sessionDto.Id,
@@ -182,8 +185,8 @@ namespace SD_Sinema.Web.Controllers
                         Price = sessionDto.Price,
                         IsActive = sessionDto.IsActive,
                         CreatedAt = sessionDto.CreatedDate,
-                        MovieTitle = sessionDto.MovieTitle,
-                        SalonName = sessionDto.SalonName
+                        MovieTitle = sessionDto.MovieTitle ?? string.Empty,
+                        SalonName = sessionDto.SalonName ?? string.Empty
                     };
 
                     // Film listesini yükle
@@ -328,6 +331,9 @@ namespace SD_Sinema.Web.Controllers
                     var content = await response.Content.ReadAsStringAsync();
                     var sessionDto = JsonConvert.DeserializeObject<SessionDto>(content);
                     
+                    if (sessionDto == null)
+                        return NotFound();
+                    
                     var sessionViewModel = new SessionViewModel
                     {
                         Id = sessionDto.Id,
@@ -337,8 +343,8 @@ namespace SD_Sinema.Web.Controllers
                         Price = sessionDto.Price,
                         IsActive = sessionDto.IsActive,
                         CreatedAt = sessionDto.CreatedDate,
-                        MovieTitle = sessionDto.MovieTitle,
-                        SalonName = sessionDto.SalonName
+                        MovieTitle = sessionDto.MovieTitle ?? string.Empty,
+                        SalonName = sessionDto.SalonName ?? string.Empty
                     };
                     
                     return View(sessionViewModel);

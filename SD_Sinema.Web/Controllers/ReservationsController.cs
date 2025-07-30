@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using SD_Sinema.Business.DTOs;
 using SD_Sinema.Web.Models;
+using SD_Sinema.Web.Models.DTOs;
 using System.Text;
 
 namespace SD_Sinema.Web.Controllers
@@ -215,6 +215,9 @@ namespace SD_Sinema.Web.Controllers
                     var content = await response.Content.ReadAsStringAsync();
                     var reservationDto = JsonConvert.DeserializeObject<ReservationDto>(content);
                     
+                    if (reservationDto == null)
+                        return NotFound();
+                    
                     var reservationViewModel = new ReservationViewModel
                     {
                         Id = reservationDto.Id,
@@ -225,8 +228,8 @@ namespace SD_Sinema.Web.Controllers
                         TotalPrice = reservationDto.Price ?? 0,
                         Status = reservationDto.Status,
                         CreatedAt = reservationDto.CreatedDate,
-                        UserName = reservationDto.UserName,
-                        SessionInfo = $"{reservationDto.MovieTitle} - {reservationDto.SalonName}"
+                        UserName = reservationDto.UserName ?? string.Empty,
+                        SessionInfo = $"{(reservationDto.MovieTitle ?? string.Empty)} - {(reservationDto.SalonName ?? string.Empty)}"
                     };
 
                     // Kullanıcı listesini yükle
@@ -363,6 +366,9 @@ namespace SD_Sinema.Web.Controllers
                     var content = await response.Content.ReadAsStringAsync();
                     var reservationDto = JsonConvert.DeserializeObject<ReservationDto>(content);
                     
+                    if (reservationDto == null)
+                        return NotFound();
+                    
                     var reservationViewModel = new ReservationViewModel
                     {
                         Id = reservationDto.Id,
@@ -373,8 +379,8 @@ namespace SD_Sinema.Web.Controllers
                         TotalPrice = reservationDto.Price ?? 0,
                         Status = reservationDto.Status,
                         CreatedAt = reservationDto.CreatedDate,
-                        UserName = reservationDto.UserName,
-                        SessionInfo = $"{reservationDto.MovieTitle} - {reservationDto.SalonName}"
+                        UserName = reservationDto.UserName ?? string.Empty,
+                        SessionInfo = $"{(reservationDto.MovieTitle ?? string.Empty)} - {(reservationDto.SalonName ?? string.Empty)}"
                     };
                     
                     return View(reservationViewModel);

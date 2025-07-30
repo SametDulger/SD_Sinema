@@ -1,4 +1,4 @@
-namespace SD_Sinema.Business.DTOs
+namespace SD_Sinema.Web.Models.DTOs
 {
     public class MovieDto
     {

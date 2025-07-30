@@ -38,12 +38,54 @@ Migrations/*Designer.cs
 Migrations/*Snapshot.cs
 Migrations/*ModelSnapshot.cs
 
+# Test Coverage ve Raporlar
+*.coverage
+*.coveragexml
+coverage/
+TestResults/
+*.trx
+*.html
+*.htm
+
+# NuGet
+*.nupkg
+packages/
+*.nuget.props
+*.nuget.targets
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+*.mdf
+*.ldf
+*.ndf
+
+# Logs
+logs/
+*.log
+*.txt
+
+# Environment ve Configuration
+appsettings.json
+appsettings.Development.json
+appsettings.Local.json
+appsettings.Production.json
+appsettings.Staging.json
+*.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
 # Kişisel ve sistem dosyaları
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Publish çıktısı
 publish/
+wwwroot/lib/
 
 # Test, yedek, özel not dosyaları
 *.test
@@ -51,3 +93,43 @@ publish/
 *.bak
 *.old
 *.orig
+
+# IDE ve Editor
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+*.pid
+*.seed
+*.pid.lock
+
+# Node.js (eğer frontend varsa)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker
+.dockerignore
+Dockerfile.dev
+docker-compose.override.yml
+
+# Azure
+.azure/
+
+# Performance ve Profiling
+*.perf
+*.prof
+
+# Security
+*.pfx
+*.key
+*.pem
+*.crt
+*.cer
