@@ -37,20 +37,21 @@ namespace SD_Sinema.Data.Repositories
         {
             entity.UpdatedDate = DateTime.Now;
             _dbSet.Update(entity);
+            await _context.SaveChangesAsync();
             return entity;
         }
 
         public async Task DeleteAsync(int id, string deletedBy, string reason)
         {
             var entity = await GetByIdAsync(id);
-            if (entity != null)
-            {
-                entity.IsDeleted = true;
-                entity.DeletedBy = deletedBy;
-                entity.DeletedDate = DateTime.Now;
-                entity.DeleteReason = reason;
-                _dbSet.Update(entity);
-            }
+            if (entity == null)
+                throw new InvalidOperationException("Film bulunamadı.");
+                
+            entity.IsDeleted = true;
+            entity.DeletedBy = deletedBy;
+            entity.DeletedDate = DateTime.Now;
+            entity.DeleteReason = reason;
+            _dbSet.Update(entity);
         }
 
         public async Task<bool> ExistsAsync(int id)

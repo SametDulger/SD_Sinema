@@ -1,20 +1,21 @@
-namespace SD_Sinema.Business.DTOs
+namespace SD_Sinema.Web.Models.DTOs
 {
     public class SalonDto
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string? Description { get; set; }
         public int Capacity { get; set; }
+        public string? Description { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedDate { get; set; }
+        public DateTime? UpdatedDate { get; set; }
     }
 
     public class CreateSalonDto
     {
         public string Name { get; set; } = string.Empty;
-        public string? Description { get; set; }
         public int Capacity { get; set; }
+        public string? Description { get; set; }
         public bool IsActive { get; set; } = true;
     }
 
@@ -22,8 +23,8 @@ namespace SD_Sinema.Business.DTOs
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string? Description { get; set; }
         public int Capacity { get; set; }
+        public string? Description { get; set; }
         public bool IsActive { get; set; }
     }
 } 

@@ -11,8 +11,6 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SD_Sinema.Business\SD_Sinema.Business.csproj" />
-  </ItemGroup>
+
 
 </Project> 
