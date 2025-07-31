@@ -4,41 +4,129 @@
     ViewData["Title"] = "Kullanıcılar";
 }
 
-<h1>Kullanıcılar</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h2 fw-bold text-primary mb-2">
+            <i class="fas fa-users me-2"></i>Kullanıcılar
+        </h1>
+        <p class="text-muted mb-0">Tüm kullanıcılarınızı görüntüleyin</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary btn-lg">
+        <i class="fas fa-plus me-2"></i>Yeni Kullanıcı Ekle
+    </a>
+</div>
 
-<p>
-    <a asp-action="Create" class="btn btn-primary">Yeni Kullanıcı Ekle</a>
-</p>
+@if (Model != null && Model.Any())
+{
+    <div class="card border-0 shadow">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr class="bg-gradient-primary text-white">
+                            <th class="border-0 py-3 px-4">
+                                <i class="fas fa-user me-2"></i>Ad
+                            </th>
+                            <th class="border-0 py-3 px-4">
+                                <i class="fas fa-user me-2"></i>Soyad
+                            </th>
+                            <th class="border-0 py-3 px-4">
+                                <i class="fas fa-envelope me-2"></i>E-posta
+                            </th>
+                            <th class="border-0 py-3 px-4">
+                                <i class="fas fa-phone me-2"></i>Telefon
+                            </th>
+                            <th class="border-0 py-3 px-4">
+                                <i class="fas fa-user-tag me-2"></i>Rol
+                            </th>
+                            <th class="border-0 py-3 px-4">
+                                <i class="fas fa-crown me-2"></i>VIP Üye
+                            </th>
+                            <th class="border-0 py-3 px-4">
+                                <i class="fas fa-circle me-2"></i>Durum
+                            </th>
+                            <th class="border-0 py-3 px-4 text-center">
+                                <i class="fas fa-cogs me-2"></i>İşlemler
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="py-3 px-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary bg-gradient rounded-circle p-2 me-3">
+                                            <i class="fas fa-user text-white"></i>
+                                        </div>
+                                        <span class="fw-bold">@item.FirstName</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4">@item.LastName</td>
+                                <td class="py-3 px-4">
+                                    <a href="mailto:@item.Email" class="text-decoration-none">
+                                        <i class="fas fa-envelope me-1 text-primary"></i>@item.Email
+                                    </a>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <a href="tel:@item.Phone" class="text-decoration-none">
+                                        <i class="fas fa-phone me-1 text-success"></i>@item.Phone
+                                    </a>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="badge bg-secondary">Standart</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="badge bg-warning text-dark">Hayır</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-circle me-1"></i>Aktif
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4 text-center">
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-warning btn-sm">
+                                            <i class="fas fa-edit me-1"></i>Düzenle
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm" 
+                                           onclick="return confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?')">
+                                            <i class="fas fa-trash me-1"></i>Sil
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="text-center py-5">
+        <div class="card border-0 bg-light">
+            <div class="card-body py-5">
+                <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                <h5 class="text-muted">Henüz kullanıcı bulunmuyor</h5>
+                <p class="text-muted mb-4">İlk kullanıcınızı ekleyerek başlayın!</p>
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>İlk Kullanıcıyı Ekle
+                </a>
+            </div>
+        </div>
+    </div>
+}
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Ad</th>
-            <th>Soyad</th>
-            <th>E-posta</th>
-            <th>Telefon</th>
-            <th>Rol</th>
-            <th>VIP Üye</th>
-            <th>Aktif</th>
-            <th>İşlemler</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.FirstName</td>
-                <td>@item.LastName</td>
-                <td>@item.Email</td>
-                <td>@item.Phone</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Düzenle</a>
-                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger" onclick="return confirm('Silmek istediğinizden emin misiniz?')">Sil</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table> 
+<style>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #0d6efd, #0056b3);
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(13, 110, 253, 0.05);
+        transform: translateY(-1px);
+        transition: all 0.3s ease;
+    }
+</style> 

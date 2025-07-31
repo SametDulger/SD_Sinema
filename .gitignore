@@ -85,7 +85,6 @@ desktop.ini
 
 # Publish çıktısı
 publish/
-wwwroot/lib/
 
 # Test, yedek, özel not dosyaları
 *.test

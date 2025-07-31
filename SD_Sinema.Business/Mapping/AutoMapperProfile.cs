@@ -13,8 +13,19 @@ namespace SD_Sinema.Business.Mapping
             CreateMap<User, CreateUserDto>().ReverseMap();
             CreateMap<User, UpdateUserDto>().ReverseMap();
 
+            // Genre mappings
+            CreateMap<Genre, GenreDto>().ReverseMap();
+            CreateMap<Genre, CreateGenreDto>().ReverseMap();
+            CreateMap<Genre, UpdateGenreDto>().ReverseMap();
+
+            // SeatType mappings
+            CreateMap<SeatType, SeatTypeDto>().ReverseMap();
+            CreateMap<SeatType, CreateSeatTypeDto>().ReverseMap();
+            CreateMap<SeatType, UpdateSeatTypeDto>().ReverseMap();
+
             // Movie mappings
-            CreateMap<Movie, MovieDto>().ReverseMap();
+            CreateMap<Movie, MovieDto>()
+                .ForMember(dest => dest.GenreName, opt => opt.MapFrom(src => src.Genre != null ? src.Genre.Name : null));
             CreateMap<Movie, CreateMovieDto>().ReverseMap();
             CreateMap<Movie, UpdateMovieDto>().ReverseMap();
 
@@ -32,7 +43,8 @@ namespace SD_Sinema.Business.Mapping
 
             // Seat mappings
             CreateMap<Seat, SeatDto>()
-                .ForMember(dest => dest.SalonName, opt => opt.MapFrom(src => src.Salon.Name));
+                .ForMember(dest => dest.SalonName, opt => opt.MapFrom(src => src.Salon.Name))
+                .ForMember(dest => dest.SeatTypeName, opt => opt.MapFrom(src => src.SeatType != null ? src.SeatType.Name : null));
             CreateMap<Seat, CreateSeatDto>().ReverseMap();
             CreateMap<Seat, UpdateSeatDto>().ReverseMap();
 

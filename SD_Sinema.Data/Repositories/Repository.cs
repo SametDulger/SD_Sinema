@@ -21,6 +21,11 @@ namespace SD_Sinema.Data.Repositories
             return await _dbSet.Where(e => !e.IsDeleted).ToListAsync();
         }
 
+        public async Task<IEnumerable<T>> GetAllAsync(Func<T, bool> predicate)
+        {
+            return await Task.FromResult(_dbSet.Where(e => !e.IsDeleted).AsEnumerable().Where(predicate).ToList());
+        }
+
         public async Task<T?> GetByIdAsync(int id)
         {
             return await _dbSet.FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
@@ -45,7 +50,7 @@ namespace SD_Sinema.Data.Repositories
         {
             var entity = await GetByIdAsync(id);
             if (entity == null)
-                throw new InvalidOperationException("Film bulunamadı.");
+                throw new InvalidOperationException($"{typeof(T).Name} bulunamadı.");
                 
             entity.IsDeleted = true;
             entity.DeletedBy = deletedBy;

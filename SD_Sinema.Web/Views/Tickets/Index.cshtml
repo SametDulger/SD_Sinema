@@ -4,34 +4,99 @@
     ViewData["Title"] = "Biletler";
 }
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Biletler</h2>
-        <a asp-action="Create" class="btn btn-primary">Yeni Bilet Ekle</a>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h2 fw-bold text-primary mb-2">
+            <i class="fas fa-receipt me-2"></i>Biletler
+        </h1>
+        <p class="text-muted mb-0">Tüm biletlerinizi görüntüleyin</p>
     </div>
+    <a asp-action="Create" class="btn btn-primary btn-lg">
+        <i class="fas fa-plus me-2"></i>Yeni Bilet Ekle
+    </a>
+</div>
 
-    <div class="row">
+@if (Model != null && Model.Any())
+{
+    <div class="row g-4">
         @foreach (var ticket in Model)
         {
-            <div class="col-md-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">Bilet #@ticket.Id</h5>
-                        <p class="card-text"><strong>Rezervasyon:</strong> @ticket.ReservationInfo</p>
-                        <p class="card-text"><strong>Bilet Türü:</strong> @ticket.TicketTypeName</p>
-                        <p class="card-text"><strong>Koltuk:</strong> @ticket.SeatInfo</p>
-                        <p class="card-text"><strong>Fiyat:</strong> @ticket.Price.ToString("C")</p>
-                        <p class="card-text"><small class="text-muted">Durum: @ticket.Status</small></p>
+            <div class="col-lg-6 col-md-12">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-header bg-gradient-warning text-dark py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0 fw-bold">
+                                <i class="fas fa-receipt me-2"></i>Bilet #@ticket.Id
+                            </h5>
+                            <span class="badge bg-dark text-white fs-6">@ticket.Price.ToString("C")</span>
+                        </div>
                     </div>
-                    <div class="card-footer">
-                        <div class="btn-group w-100" role="group">
-                            <a asp-action="Details" asp-route-id="@ticket.Id" class="btn btn-outline-primary btn-sm">Detay</a>
-                            <a asp-action="Edit" asp-route-id="@ticket.Id" class="btn btn-outline-warning btn-sm">Düzenle</a>
-                            <a asp-action="Delete" asp-route-id="@ticket.Id" class="btn btn-outline-danger btn-sm">Sil</a>
+                    <div class="card-body p-4">
+                        <div class="row g-3 mb-3">
+                            <div class="col-12">
+                                <div class="d-flex align-items-center text-muted">
+                                    <i class="fas fa-ticket-alt me-2 text-primary"></i>
+                                    <span class="fw-bold">@ticket.ReservationInfo</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center text-muted">
+                                    <i class="fas fa-tag me-2 text-primary"></i>
+                                    <span>@ticket.TicketTypeName</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center text-muted">
+                                    <i class="fas fa-chair me-2 text-primary"></i>
+                                    <span>@ticket.SeatInfo</span>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-circle me-2 @(ticket.Status == "Aktif" ? "text-success" : ticket.Status == "Kullanıldı" ? "text-warning" : "text-danger")"></i>
+                                    <span class="@(ticket.Status == "Aktif" ? "text-success" : ticket.Status == "Kullanıldı" ? "text-warning" : "text-danger") fw-bold">
+                                        @ticket.Status
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <a asp-action="Details" asp-route-id="@ticket.Id" class="btn btn-primary">
+                                <i class="fas fa-info-circle me-2"></i>Detaylar
+                            </a>
+                            <div class="btn-group" role="group">
+                                <a asp-action="Edit" asp-route-id="@ticket.Id" class="btn btn-outline-warning">
+                                    <i class="fas fa-edit me-1"></i>Düzenle
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@ticket.Id" class="btn btn-outline-danger">
+                                    <i class="fas fa-trash me-1"></i>Sil
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         }
     </div>
-</div> 
+}
+else
+{
+    <div class="text-center py-5">
+        <div class="card border-0 bg-light">
+            <div class="card-body py-5">
+                <i class="fas fa-receipt fa-4x text-muted mb-3"></i>
+                <h5 class="text-muted">Henüz bilet bulunmuyor</h5>
+                <p class="text-muted mb-4">İlk biletinizi oluşturarak başlayın!</p>
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>İlk Bileti Oluştur
+                </a>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .bg-gradient-warning {
+        background: linear-gradient(135deg, #ffc107, #e0a800);
+    }
+</style> 

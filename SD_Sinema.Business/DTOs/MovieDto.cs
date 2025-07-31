@@ -8,7 +8,8 @@ namespace SD_Sinema.Business.DTOs
         public int Duration { get; set; }
         public string? Director { get; set; }
         public string? Cast { get; set; }
-        public string? Genre { get; set; }
+        public int? GenreId { get; set; }
+        public string? GenreName { get; set; }
         public string? AgeRating { get; set; }
         public string? PosterUrl { get; set; }
         public string? TrailerUrl { get; set; }
@@ -25,7 +26,7 @@ namespace SD_Sinema.Business.DTOs
         public int Duration { get; set; }
         public string? Director { get; set; }
         public string? Cast { get; set; }
-        public string? Genre { get; set; }
+        public int? GenreId { get; set; }
         public string? AgeRating { get; set; }
         public string? PosterUrl { get; set; }
         public string? TrailerUrl { get; set; }
@@ -42,7 +43,7 @@ namespace SD_Sinema.Business.DTOs
         public int Duration { get; set; }
         public string? Director { get; set; }
         public string? Cast { get; set; }
-        public string? Genre { get; set; }
+        public int? GenreId { get; set; }
         public string? AgeRating { get; set; }
         public string? PosterUrl { get; set; }
         public string? TrailerUrl { get; set; }

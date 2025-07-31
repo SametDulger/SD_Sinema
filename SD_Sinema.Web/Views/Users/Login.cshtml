@@ -4,30 +4,87 @@
     ViewData["Title"] = "Giriş";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h2 class="text-center">Giriş Yap</h2>
+<!-- Örnek Kullanıcı Bilgileri -->
+<div class="row justify-content-center mb-4">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <h6 class="alert-heading mb-2">
+                <i class="fas fa-info-circle me-2"></i>Örnek Kullanıcı Bilgileri
+            </h6>
+            <div class="row">
+                <div class="col-md-4">
+                    <strong class="text-primary">👑 Admin:</strong><br>
+                    <small class="text-muted">admin@sinema.com<br>admin123</small>
+                </div>
+                <div class="col-md-4">
+                    <strong class="text-success">👤 Ahmet:</strong><br>
+                    <small class="text-muted">ahmet@email.com<br>123456</small>
+                </div>
+                <div class="col-md-4">
+                    <strong class="text-warning">👤 Ayşe:</strong><br>
+                    <small class="text-muted">ayse@email.com<br>123456</small>
+                </div>
             </div>
-            <div class="card-body">
+        </div>
+    </div>
+</div>
+
+<!-- Giriş Formu -->
+<div class="row justify-content-center">
+    <div class="col-12">
+        <div class="card border-0 shadow">
+            <div class="card-header bg-primary text-white text-center py-4">
+                <h2 class="mb-0">
+                    <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
+                </h2>
+                <p class="mb-0 mt-2 opacity-75">SD Sinema hesabınıza giriş yapın</p>
+            </div>
+            <div class="card-body p-4">
                 <form asp-action="Login" method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
                     
-                    <div class="form-group mb-3">
-                        <label asp-for="Email" class="control-label">E-posta</label>
-                        <input asp-for="Email" class="form-control" />
-                        <span asp-validation-for="Email" class="text-danger"></span>
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label fw-bold">
+                            <i class="fas fa-envelope me-2 text-primary"></i>E-posta Adresi
+                        </label>
+                        <input asp-for="Email" class="form-control form-control-lg" placeholder="ornek@email.com" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
                     </div>
                     
-                    <div class="form-group mb-3">
-                        <label asp-for="Password" class="control-label">Şifre</label>
-                        <input asp-for="Password" type="password" class="form-control" />
-                        <span asp-validation-for="Password" class="text-danger"></span>
+                    <div class="mb-4">
+                        <label asp-for="Password" class="form-label fw-bold">
+                            <i class="fas fa-lock me-2 text-primary"></i>Şifre
+                        </label>
+                        <input asp-for="Password" type="password" class="form-control form-control-lg" placeholder="Şifrenizi giriniz" />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
                     </div>
                     
-                    <div class="form-group text-center">
-                        <button type="submit" class="btn btn-primary">Giriş Yap</button>
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
+                        </button>
+                    </div>
+                    
+                    <div class="text-center">
+                        <p class="text-muted mb-0">
+                            Hesabınız yok mu? 
+                            <a asp-action="Create" class="text-decoration-none fw-bold">Kayıt Ol</a>
+                        </p>
+                    </div>
+                    
+                    <!-- Hızlı Giriş Butonları -->
+                    <div class="mt-3">
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="fillLogin('admin@sinema.com', 'admin123')">
+                                <i class="fas fa-crown me-1"></i>Admin ile Giriş
+                            </button>
+                            <button type="button" class="btn btn-outline-success btn-sm" onclick="fillLogin('ahmet@email.com', '123456')">
+                                <i class="fas fa-user me-1"></i>Ahmet ile Giriş
+                            </button>
+                            <button type="button" class="btn btn-outline-warning btn-sm" onclick="fillLogin('ayse@email.com', '123456')">
+                                <i class="fas fa-user me-1"></i>Ayşe ile Giriş
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -37,4 +94,14 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        function fillLogin(email, password) {
+            document.getElementById('Email').value = email;
+            document.getElementById('Password').value = password;
+            
+            // Formu otomatik olarak gönder
+            document.querySelector('form').submit();
+        }
+    </script>
 } 

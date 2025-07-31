@@ -11,6 +11,9 @@ namespace SD_Sinema.Web.Models.DTOs
         public string Status { get; set; } = string.Empty;
         public string? Notes { get; set; }
         public decimal? Price { get; set; }
+        public int SeatCount { get; set; }
+        public decimal TotalPrice { get; set; }
+        public string SessionInfo { get; set; } = string.Empty;
         public string UserName { get; set; } = string.Empty;
         public string MovieTitle { get; set; } = string.Empty;
         public string SalonName { get; set; } = string.Empty;
@@ -28,6 +31,8 @@ namespace SD_Sinema.Web.Models.DTOs
         public string Status { get; set; } = string.Empty;
         public string? Notes { get; set; }
         public decimal? Price { get; set; }
+        public int SeatCount { get; set; }
+        public decimal TotalPrice { get; set; }
     }
 
     public class UpdateReservationDto
@@ -41,5 +46,7 @@ namespace SD_Sinema.Web.Models.DTOs
         public string Status { get; set; } = string.Empty;
         public string? Notes { get; set; }
         public decimal? Price { get; set; }
+        public int SeatCount { get; set; }
+        public decimal TotalPrice { get; set; }
     }
 } 

@@ -1,57 +1,52 @@
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using SD_Sinema.Web.Models;
 using SD_Sinema.Web.Models.DTOs;
-using System.Text;
+using SD_Sinema.Web.Services;
+using SD_Sinema.Web.Filters;
 
 namespace SD_Sinema.Web.Controllers
 {
     public class UsersController : Controller
     {
-        private readonly HttpClient _httpClient;
+        private readonly IApiService _apiService;
 
-        public UsersController(IHttpClientFactory httpClientFactory)
+        public UsersController(IApiService apiService)
         {
-            _httpClient = httpClientFactory.CreateClient("API");
+            _apiService = apiService;
         }
 
         public async Task<IActionResult> Index()
         {
             try
             {
-                var response = await _httpClient.GetAsync("api/users");
-                if (response.IsSuccessStatusCode)
+                var userDtos = await _apiService.GetAsync<List<UserDto>>("api/users");
+                
+                var userViewModels = userDtos?.Select(u => new UserViewModel
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var userDtos = JsonConvert.DeserializeObject<List<UserDto>>(content);
-                    
-                    var userViewModels = userDtos?.Select(u => new UserViewModel
-                    {
-                        Id = u.Id,
-                        FirstName = u.FirstName,
-                        LastName = u.LastName,
-                        Email = u.Email,
-                        Phone = u.PhoneNumber ?? string.Empty,
-                        CreatedAt = u.CreatedDate
-                    }).ToList() ?? new List<UserViewModel>();
-                    
-                    return View(userViewModels);
-                }
+                    Id = u.Id,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
+                    Email = u.Email,
+                    Phone = u.PhoneNumber ?? string.Empty,
+                    CreatedAt = u.CreatedDate
+                }).ToList() ?? new List<UserViewModel>();
+                
+                return View(userViewModels);
             }
             catch
             {
-                // API bağlantı hatası
+                return View(new List<UserViewModel>());
             }
-
-            return View(Enumerable.Empty<UserViewModel>());
         }
 
+        [AllowAnonymous]
         public IActionResult Create()
         {
             return View(new UserViewModel());
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> Create(UserViewModel userViewModel)
         {
             if (ModelState.IsValid)
@@ -67,13 +62,14 @@ namespace SD_Sinema.Web.Controllers
                         Phone = userViewModel.Phone
                     };
 
-                    var json = JsonConvert.SerializeObject(createUserDto);
-                    var content = new StringContent(json, Encoding.UTF8, "application/json");
-                    var response = await _httpClient.PostAsync("api/users", content);
-
-                    if (response.IsSuccessStatusCode)
+                    var result = await _apiService.PostAsync<UserDto>("api/users", createUserDto);
+                    if (result != null)
                     {
                         return RedirectToAction(nameof(Index));
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("", "Kullanıcı oluşturulurken hata oluştu.");
                     }
                 }
                 catch
@@ -89,34 +85,26 @@ namespace SD_Sinema.Web.Controllers
         {
             try
             {
-                var response = await _httpClient.GetAsync($"api/users/{id}");
-                if (response.IsSuccessStatusCode)
+                var userDto = await _apiService.GetAsync<UserDto>($"api/users/{id}");
+                
+                if (userDto == null)
+                    return NotFound();
+                
+                var userViewModel = new UserViewModel
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var userDto = JsonConvert.DeserializeObject<UserDto>(content);
-                    
-                    if (userDto == null)
-                        return NotFound();
-                    
-                    var userViewModel = new UserViewModel
-                    {
-                        Id = userDto.Id,
-                        FirstName = userDto.FirstName,
-                        LastName = userDto.LastName,
-                        Email = userDto.Email,
-                        Phone = userDto.PhoneNumber ?? string.Empty,
-                        CreatedAt = userDto.CreatedDate
-                    };
-                    
-                    return View(userViewModel);
-                }
+                    Id = userDto.Id,
+                    FirstName = userDto.FirstName,
+                    LastName = userDto.LastName,
+                    Email = userDto.Email,
+                    Phone = userDto.PhoneNumber ?? string.Empty
+                };
+
+                return View(userViewModel);
             }
             catch
             {
-                // API bağlantı hatası
+                return NotFound();
             }
-
-            return NotFound();
         }
 
         [HttpPost]
@@ -128,20 +116,20 @@ namespace SD_Sinema.Web.Controllers
                 {
                     var updateUserDto = new UpdateUserDto
                     {
-                        Id = id,
                         FirstName = userViewModel.FirstName,
                         LastName = userViewModel.LastName,
                         Email = userViewModel.Email,
                         Phone = userViewModel.Phone
                     };
 
-                    var json = JsonConvert.SerializeObject(updateUserDto);
-                    var content = new StringContent(json, Encoding.UTF8, "application/json");
-                    var response = await _httpClient.PutAsync($"api/users/{id}", content);
-
-                    if (response.IsSuccessStatusCode)
+                    var result = await _apiService.PutAsync<UserDto>($"api/users/{id}", updateUserDto);
+                    if (result != null)
                     {
                         return RedirectToAction(nameof(Index));
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("", "Kullanıcı güncellenirken hata oluştu.");
                     }
                 }
                 catch
@@ -157,52 +145,75 @@ namespace SD_Sinema.Web.Controllers
         {
             try
             {
-                var response = await _httpClient.DeleteAsync($"api/users/{id}?deletedBy=Admin&reason=Silme");
-                if (response.IsSuccessStatusCode)
+                var userDto = await _apiService.GetAsync<UserDto>($"api/users/{id}");
+                
+                if (userDto == null)
+                    return NotFound();
+                
+                var userViewModel = new UserViewModel
+                {
+                    Id = userDto.Id,
+                    FirstName = userDto.FirstName,
+                    LastName = userDto.LastName,
+                    Email = userDto.Email,
+                    Phone = userDto.PhoneNumber ?? string.Empty
+                };
+
+                return View(userViewModel);
+            }
+            catch
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpPost, ActionName("Delete")]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            try
+            {
+                var success = await _apiService.DeleteAsync($"api/users/{id}?deletedBy=Admin&reason=Silme");
+                if (success)
                 {
                     return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Kullanıcı silinirken hata oluştu.");
                 }
             }
             catch
             {
-                // API bağlantı hatası
+                ModelState.AddModelError("", "Kullanıcı silinirken hata oluştu.");
             }
 
             return RedirectToAction(nameof(Index));
         }
 
+        [AllowAnonymous]
         public IActionResult Login()
         {
             return View(new LoginDto());
         }
 
+
+
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> Login(LoginDto loginDto)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    var json = JsonConvert.SerializeObject(loginDto);
-                    var content = new StringContent(json, Encoding.UTF8, "application/json");
-                    var response = await _httpClient.PostAsync("api/users/login", content);
-
-                    if (response.IsSuccessStatusCode)
+                    var userDto = await _apiService.PostAsync<UserDto>("api/users/login", loginDto);
+                    if (userDto != null)
                     {
-                        var responseContent = await response.Content.ReadAsStringAsync();
-                        var user = JsonConvert.DeserializeObject<UserDto>(responseContent);
-                        
-                        if (user == null)
-                        {
-                            ModelState.AddModelError("", "Giriş yapılırken hata oluştu.");
-                            return View(loginDto);
-                        }
-                        
                         // Session'a kullanıcı bilgilerini kaydet
-                        HttpContext.Session.SetString("UserId", user.Id.ToString());
-                        HttpContext.Session.SetString("UserName", $"{user.FirstName} {user.LastName}");
-                        HttpContext.Session.SetString("UserRole", user.Role);
-
+                        HttpContext.Session.SetString("UserId", userDto.Id.ToString());
+                        HttpContext.Session.SetString("UserName", $"{userDto.FirstName} {userDto.LastName}");
+                        HttpContext.Session.SetString("UserEmail", userDto.Email);
+                        
                         return RedirectToAction("Index", "Home");
                     }
                     else

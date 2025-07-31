@@ -4,64 +4,83 @@
     ViewData["Title"] = "Bilet Düzenle";
 }
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card">
-                <div class="card-header">
-                    <h3>Bilet Düzenle</h3>
-                </div>
-                <div class="card-body">
-                    <form asp-action="Edit" method="post">
-                        <input type="hidden" asp-for="Id" />
-                        <input type="hidden" asp-for="CreatedAt" />
-                        
-                        <div class="form-group mb-3">
-                            <label asp-for="ReservationId" class="form-label">Rezervasyon</label>
-                            <select asp-for="ReservationId" class="form-select" asp-items="@ViewBag.Reservations">
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+        <div class="card border-0 shadow">
+            <div class="card-header bg-warning text-dark py-3">
+                <h3 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>Bilet Düzenle
+                </h3>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="CreatedAt" />
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="ReservationId" class="form-label fw-bold">
+                                <i class="fas fa-calendar-check me-2 text-primary"></i>Rezervasyon
+                            </label>
+                            <select asp-for="ReservationId" class="form-select form-select-lg" asp-items="@ViewBag.Reservations">
                                 <option value="">Rezervasyon Seçin</option>
                             </select>
-                            <span asp-validation-for="ReservationId" class="text-danger"></span>
+                            <span asp-validation-for="ReservationId" class="text-danger small"></span>
                         </div>
 
-                        <div class="form-group mb-3">
-                            <label asp-for="TicketTypeId" class="form-label">Bilet Türü</label>
-                            <select asp-for="TicketTypeId" class="form-select" asp-items="@ViewBag.TicketTypes">
+                        <div class="col-md-6">
+                            <label asp-for="TicketTypeId" class="form-label fw-bold">
+                                <i class="fas fa-ticket-alt me-2 text-primary"></i>Bilet Türü
+                            </label>
+                            <select asp-for="TicketTypeId" class="form-select form-select-lg" asp-items="@ViewBag.TicketTypes">
                                 <option value="">Bilet Türü Seçin</option>
                             </select>
-                            <span asp-validation-for="TicketTypeId" class="text-danger"></span>
+                            <span asp-validation-for="TicketTypeId" class="text-danger small"></span>
                         </div>
 
-                        <div class="form-group mb-3">
-                            <label asp-for="SeatId" class="form-label">Koltuk</label>
-                            <select asp-for="SeatId" class="form-select" asp-items="@ViewBag.Seats">
+                        <div class="col-md-6">
+                            <label asp-for="SeatId" class="form-label fw-bold">
+                                <i class="fas fa-chair me-2 text-primary"></i>Koltuk
+                            </label>
+                            <select asp-for="SeatId" class="form-select form-select-lg" asp-items="@ViewBag.Seats">
                                 <option value="">Koltuk Seçin</option>
                             </select>
-                            <span asp-validation-for="SeatId" class="text-danger"></span>
+                            <span asp-validation-for="SeatId" class="text-danger small"></span>
                         </div>
 
-                        <div class="form-group mb-3">
-                            <label asp-for="Price" class="form-label">Fiyat</label>
-                            <input asp-for="Price" class="form-control" type="number" step="0.01" />
-                            <span asp-validation-for="Price" class="text-danger"></span>
+                        <div class="col-md-6">
+                            <label asp-for="Price" class="form-label fw-bold">
+                                <i class="fas fa-money-bill me-2 text-primary"></i>Fiyat
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">₺</span>
+                                <input asp-for="Price" class="form-control" type="number" step="0.01" placeholder="0.00" />
+                            </div>
+                            <span asp-validation-for="Price" class="text-danger small"></span>
                         </div>
 
-                        <div class="form-group mb-3">
-                            <label asp-for="Status" class="form-label">Durum</label>
-                            <select asp-for="Status" class="form-select">
+                        <div class="col-12">
+                            <label asp-for="Status" class="form-label fw-bold">
+                                <i class="fas fa-info-circle me-2 text-primary"></i>Durum
+                            </label>
+                            <select asp-for="Status" class="form-select form-select-lg">
                                 <option value="Aktif">Aktif</option>
                                 <option value="Kullanıldı">Kullanıldı</option>
                                 <option value="İptal Edildi">İptal Edildi</option>
                             </select>
-                            <span asp-validation-for="Status" class="text-danger"></span>
+                            <span asp-validation-for="Status" class="text-danger small"></span>
                         </div>
+                    </div>
 
-                        <div class="form-group">
-                            <button type="submit" class="btn btn-primary">Kaydet</button>
-                            <a asp-action="Index" class="btn btn-secondary">İptal</a>
-                        </div>
-                    </form>
-                </div>
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Geri Dön
+                        </a>
+                        <button type="submit" class="btn btn-warning btn-lg">
+                            <i class="fas fa-save me-2"></i>Değişiklikleri Kaydet
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

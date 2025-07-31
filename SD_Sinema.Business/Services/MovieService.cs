@@ -37,7 +37,7 @@ namespace SD_Sinema.Business.Services
                 Duration = createMovieDto.Duration,
                 Director = createMovieDto.Director,
                 Cast = createMovieDto.Cast,
-                Genre = createMovieDto.Genre,
+                GenreId = createMovieDto.GenreId,
                 AgeRating = createMovieDto.AgeRating,
                 PosterUrl = createMovieDto.PosterUrl,
                 TrailerUrl = createMovieDto.TrailerUrl,
@@ -65,7 +65,7 @@ namespace SD_Sinema.Business.Services
             movie.Duration = updateMovieDto.Duration;
             movie.Director = updateMovieDto.Director;
             movie.Cast = updateMovieDto.Cast;
-            movie.Genre = updateMovieDto.Genre;
+            movie.GenreId = updateMovieDto.GenreId;
             movie.AgeRating = updateMovieDto.AgeRating;
             movie.PosterUrl = updateMovieDto.PosterUrl;
             movie.TrailerUrl = updateMovieDto.TrailerUrl;
@@ -106,7 +106,8 @@ namespace SD_Sinema.Business.Services
                 Duration = movie.Duration,
                 Director = movie.Director,
                 Cast = movie.Cast,
-                Genre = movie.Genre,
+                GenreId = movie.GenreId,
+                GenreName = movie.Genre?.Name,
                 AgeRating = movie.AgeRating,
                 PosterUrl = movie.PosterUrl,
                 TrailerUrl = movie.TrailerUrl,
