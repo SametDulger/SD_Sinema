@@ -1,50 +1,43 @@
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using SD_Sinema.Web.Models;
 using SD_Sinema.Web.Models.DTOs;
-using System.Text;
+using SD_Sinema.Web.Services;
 
 namespace SD_Sinema.Web.Controllers
 {
     public class SeatsController : Controller
     {
-        private readonly HttpClient _httpClient;
+        private readonly IApiService _apiService;
 
-        public SeatsController(IHttpClientFactory httpClientFactory)
+        public SeatsController(IApiService apiService)
         {
-            _httpClient = httpClientFactory.CreateClient("API");
+            _apiService = apiService;
         }
 
         public async Task<IActionResult> Index()
         {
             try
             {
-                var response = await _httpClient.GetAsync("api/seats");
-                if (response.IsSuccessStatusCode)
+                var seatDtos = await _apiService.GetAsync<List<SeatDto>>("api/seats");
+                
+                var seatViewModels = seatDtos?.Select(s => new SeatViewModel
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var seatDtos = JsonConvert.DeserializeObject<List<SeatDto>>(content);
-                    
-                    var seatViewModels = seatDtos?.Select(s => new SeatViewModel
-                    {
-                        Id = s.Id,
-                        SalonId = s.SalonId,
-                        SeatNumber = $"{s.RowNumber}{s.SeatNumber}",
-                        RowNumber = s.SeatNumber,
-                        IsActive = s.IsActive,
-                        CreatedAt = s.CreatedDate,
-                        SalonName = s.SalonName
-                    }).ToList() ?? new List<SeatViewModel>();
-                    
-                    return View(seatViewModels);
-                }
+                    Id = s.Id,
+                    SalonId = s.SalonId,
+                    SeatNumber = s.SeatNumber.ToString(),
+                    RowNumber = int.Parse(s.RowNumber),
+                    IsActive = s.IsActive,
+                    CreatedAt = s.CreatedDate,
+                    SalonName = s.SalonName
+                }).ToList() ?? new List<SeatViewModel>();
+                
+                return View(seatViewModels);
             }
             catch
             {
                 // API bağlantı hatası
+                return View(new List<SeatViewModel>());
             }
-
-            return View(Enumerable.Empty<SeatViewModel>());
         }
 
         public async Task<IActionResult> Create()
@@ -52,21 +45,25 @@ namespace SD_Sinema.Web.Controllers
             try
             {
                 // Salon listesini yükle
-                var salonsResponse = await _httpClient.GetAsync("api/salons");
-                if (salonsResponse.IsSuccessStatusCode)
+                var salonDtos = await _apiService.GetAsync<List<SalonDto>>("api/salons");
+                ViewBag.Salons = salonDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
                 {
-                    var salonsContent = await salonsResponse.Content.ReadAsStringAsync();
-                    var salonDtos = JsonConvert.DeserializeObject<List<SalonDto>>(salonsContent);
-                    ViewBag.Salons = salonDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                    {
-                        Value = s.Id.ToString(),
-                        Text = s.Name
-                    }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
+                    Value = s.Id.ToString(),
+                    Text = s.Name
+                }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+
+                // Koltuk tiplerini yükle
+                var seatTypes = await _apiService.GetAsync<List<string>>("api/seats/types");
+                ViewBag.SeatTypes = seatTypes?.Select(st => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                {
+                    Value = st,
+                    Text = st
+                }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
             }
             catch
             {
                 ViewBag.Salons = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+                ViewBag.SeatTypes = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
             }
 
             return View(new SeatViewModel());
@@ -84,46 +81,47 @@ namespace SD_Sinema.Web.Controllers
                         SalonId = seatViewModel.SalonId,
                         SeatNumber = seatViewModel.SeatNumber,
                         RowNumber = seatViewModel.RowNumber,
-                        SeatType = "Normal"
+                        SeatTypeId = seatViewModel.SeatTypeId,
+                        IsActive = seatViewModel.IsActive
                     };
 
-                    var json = JsonConvert.SerializeObject(createSeatDto);
-                    var content = new StringContent(json, Encoding.UTF8, "application/json");
-                    var response = await _httpClient.PostAsync("api/seats", content);
-
-                    if (response.IsSuccessStatusCode)
+                    var result = await _apiService.PostAsync<SeatDto>("api/seats", createSeatDto);
+                    if (result != null)
                     {
                         return RedirectToAction(nameof(Index));
                     }
+                    else
+                    {
+                        ModelState.AddModelError("", "Koltuk oluşturulurken hata oluştu.");
+                    }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    ModelState.AddModelError("", "Koltuk oluşturulurken hata oluştu.");
+                    ModelState.AddModelError("", $"Koltuk oluşturulurken hata oluştu: {ex.Message}");
                 }
             }
 
-            // Hata durumunda salon listesini tekrar yükle
+            // Hata durumunda dropdown'ları tekrar doldur
             try
             {
-                var salonsResponse = await _httpClient.GetAsync("api/salons");
-                if (salonsResponse.IsSuccessStatusCode)
+                var salonDtos = await _apiService.GetAsync<List<SalonDto>>("api/salons");
+                ViewBag.Salons = salonDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
                 {
-                    var salonsContent = await salonsResponse.Content.ReadAsStringAsync();
-                    var salonDtos = JsonConvert.DeserializeObject<List<SalonDto>>(salonsContent);
-                    ViewBag.Salons = salonDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                    {
-                        Value = s.Id.ToString(),
-                        Text = s.Name
-                    }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
-                else
+                    Value = s.Id.ToString(),
+                    Text = s.Name
+                }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+
+                var seatTypes = await _apiService.GetAsync<List<string>>("api/seats/types");
+                ViewBag.SeatTypes = seatTypes?.Select(st => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
                 {
-                    ViewBag.Salons = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
+                    Value = st,
+                    Text = st
+                }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
             }
             catch
             {
                 ViewBag.Salons = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+                ViewBag.SeatTypes = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
             }
 
             return View(seatViewModel);
@@ -133,48 +131,44 @@ namespace SD_Sinema.Web.Controllers
         {
             try
             {
-                var response = await _httpClient.GetAsync($"api/seats/{id}");
-                if (response.IsSuccessStatusCode)
+                var seatDto = await _apiService.GetAsync<SeatDto>($"api/seats/{id}");
+                
+                if (seatDto == null)
+                    return NotFound();
+                
+                var seatViewModel = new SeatViewModel
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var seatDto = JsonConvert.DeserializeObject<SeatDto>(content);
-                    
-                    if (seatDto == null)
-                        return NotFound();
-                    
-                    var seatViewModel = new SeatViewModel
-                    {
-                        Id = seatDto.Id,
-                        SalonId = seatDto.SalonId,
-                        SeatNumber = seatDto.RowNumber,
-                        RowNumber = seatDto.SeatNumber,
-                        IsActive = seatDto.IsActive,
-                        CreatedAt = seatDto.CreatedDate,
-                        SalonName = seatDto.SalonName
-                    };
+                    Id = seatDto.Id,
+                    SalonId = seatDto.SalonId,
+                    SeatNumber = seatDto.SeatNumber.ToString(),
+                    RowNumber = int.Parse(seatDto.RowNumber),
+                    IsActive = seatDto.IsActive,
+                    CreatedAt = seatDto.CreatedDate,
+                    SalonName = seatDto.SalonName
+                };
 
-                    // Salon listesini yükle
-                    var salonsResponse = await _httpClient.GetAsync("api/salons");
-                    if (salonsResponse.IsSuccessStatusCode)
-                    {
-                        var salonsContent = await salonsResponse.Content.ReadAsStringAsync();
-                        var salonDtos = JsonConvert.DeserializeObject<List<SalonDto>>(salonsContent);
-                        ViewBag.Salons = salonDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                        {
-                            Value = s.Id.ToString(),
-                            Text = s.Name
-                        }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                    }
-                    
-                    return View(seatViewModel);
-                }
+                // Salon listesini yükle
+                var salonDtos = await _apiService.GetAsync<List<SalonDto>>("api/salons");
+                ViewBag.Salons = salonDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                {
+                    Value = s.Id.ToString(),
+                    Text = s.Name
+                }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+
+                // Koltuk tiplerini yükle
+                var seatTypes = await _apiService.GetAsync<List<string>>("api/seats/types");
+                ViewBag.SeatTypes = seatTypes?.Select(st => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                {
+                    Value = st,
+                    Text = st
+                }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+                
+                return View(seatViewModel);
             }
             catch
             {
-                // API bağlantı hatası
+                return NotFound();
             }
-
-            return NotFound();
         }
 
         [HttpPost]
@@ -190,46 +184,47 @@ namespace SD_Sinema.Web.Controllers
                         SalonId = seatViewModel.SalonId,
                         SeatNumber = seatViewModel.SeatNumber,
                         RowNumber = seatViewModel.RowNumber,
-                        SeatType = "Normal"
+                        SeatTypeId = seatViewModel.SeatTypeId,
+                        IsActive = seatViewModel.IsActive
                     };
 
-                    var json = JsonConvert.SerializeObject(updateSeatDto);
-                    var content = new StringContent(json, Encoding.UTF8, "application/json");
-                    var response = await _httpClient.PutAsync($"api/seats/{id}", content);
-
-                    if (response.IsSuccessStatusCode)
+                    var result = await _apiService.PutAsync<SeatDto>($"api/seats/{id}", updateSeatDto);
+                    if (result != null)
                     {
                         return RedirectToAction(nameof(Index));
                     }
+                    else
+                    {
+                        ModelState.AddModelError("", "Koltuk güncellenirken hata oluştu.");
+                    }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    ModelState.AddModelError("", "Koltuk güncellenirken hata oluştu.");
+                    ModelState.AddModelError("", $"Koltuk güncellenirken hata oluştu: {ex.Message}");
                 }
             }
 
-            // Hata durumunda salon listesini tekrar yükle
+            // Hata durumunda dropdown'ları tekrar doldur
             try
             {
-                var salonsResponse = await _httpClient.GetAsync("api/salons");
-                if (salonsResponse.IsSuccessStatusCode)
+                var salonDtos = await _apiService.GetAsync<List<SalonDto>>("api/salons");
+                ViewBag.Salons = salonDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
                 {
-                    var salonsContent = await salonsResponse.Content.ReadAsStringAsync();
-                    var salonDtos = JsonConvert.DeserializeObject<List<SalonDto>>(salonsContent);
-                    ViewBag.Salons = salonDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                    {
-                        Value = s.Id.ToString(),
-                        Text = s.Name
-                    }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
-                else
+                    Value = s.Id.ToString(),
+                    Text = s.Name
+                }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+
+                var seatTypes = await _apiService.GetAsync<List<string>>("api/seats/types");
+                ViewBag.SeatTypes = seatTypes?.Select(st => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
                 {
-                    ViewBag.Salons = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
+                    Value = st,
+                    Text = st
+                }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
             }
             catch
             {
                 ViewBag.Salons = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+                ViewBag.SeatTypes = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
             }
 
             return View(seatViewModel);
@@ -239,18 +234,79 @@ namespace SD_Sinema.Web.Controllers
         {
             try
             {
-                var response = await _httpClient.DeleteAsync($"api/seats/{id}?deletedBy=Admin&reason=Silme");
-                if (response.IsSuccessStatusCode)
+                var seatDto = await _apiService.GetAsync<SeatDto>($"api/seats/{id}");
+                
+                if (seatDto == null)
+                    return NotFound();
+                
+                var seatViewModel = new SeatViewModel
                 {
-                    return RedirectToAction(nameof(Index));
-                }
+                    Id = seatDto.Id,
+                    SalonId = seatDto.SalonId,
+                    SeatNumber = seatDto.SeatNumber.ToString(),
+                    RowNumber = int.Parse(seatDto.RowNumber),
+                    IsActive = seatDto.IsActive,
+                    CreatedAt = seatDto.CreatedDate,
+                    SalonName = seatDto.SalonName
+                };
+                
+                return View(seatViewModel);
             }
             catch
             {
-                // API bağlantı hatası
+                return NotFound();
+            }
+        }
+
+        [HttpPost, ActionName("Delete")]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            try
+            {
+                var success = await _apiService.DeleteAsync($"api/seats/{id}");
+                if (success)
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Koltuk silinirken hata oluştu.");
+                }
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", $"Koltuk silinirken hata oluştu: {ex.Message}");
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> Details(int id)
+        {
+            try
+            {
+                var seatDto = await _apiService.GetAsync<SeatDto>($"api/seats/{id}");
+                
+                if (seatDto == null)
+                    return NotFound();
+                
+                var seatViewModel = new SeatViewModel
+                {
+                    Id = seatDto.Id,
+                    SalonId = seatDto.SalonId,
+                    SeatNumber = seatDto.SeatNumber.ToString(),
+                    RowNumber = int.Parse(seatDto.RowNumber),
+                    IsActive = seatDto.IsActive,
+                    CreatedAt = seatDto.CreatedDate,
+                    SalonName = seatDto.SalonName
+                };
+                
+                return View(seatViewModel);
+            }
+            catch
+            {
+                return NotFound();
+            }
         }
     }
 } 

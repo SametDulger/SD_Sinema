@@ -4,70 +4,99 @@
     ViewData["Title"] = "Yeni Kullanıcı";
 }
 
-<h1>Yeni Kullanıcı Ekle</h1>
-
-<div class="row">
-    <div class="col-md-6">
-        <form asp-action="Create" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            
-            <div class="form-group mb-3">
-                <label asp-for="FirstName" class="control-label">Ad</label>
-                <input asp-for="FirstName" class="form-control" />
-                <span asp-validation-for="FirstName" class="text-danger"></span>
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+        <div class="card border-0 shadow">
+            <div class="card-header bg-primary text-white py-3">
+                <h3 class="mb-0">
+                    <i class="fas fa-user-plus me-2"></i>Yeni Kullanıcı Ekle
+                </h3>
             </div>
-            
-            <div class="form-group mb-3">
-                <label asp-for="LastName" class="control-label">Soyad</label>
-                <input asp-for="LastName" class="form-control" />
-                <span asp-validation-for="LastName" class="text-danger"></span>
+            <div class="card-body p-4">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="FirstName" class="form-label fw-bold">
+                                <i class="fas fa-user me-2 text-primary"></i>Ad
+                            </label>
+                            <input asp-for="FirstName" class="form-control" placeholder="Adınızı giriniz" />
+                            <span asp-validation-for="FirstName" class="text-danger small"></span>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label asp-for="LastName" class="form-label fw-bold">
+                                <i class="fas fa-user me-2 text-primary"></i>Soyad
+                            </label>
+                            <input asp-for="LastName" class="form-control" placeholder="Soyadınızı giriniz" />
+                            <span asp-validation-for="LastName" class="text-danger small"></span>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label asp-for="Email" class="form-label fw-bold">
+                                <i class="fas fa-envelope me-2 text-primary"></i>E-posta
+                            </label>
+                            <input asp-for="Email" class="form-control" placeholder="ornek@email.com" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label asp-for="Password" class="form-label fw-bold">
+                                <i class="fas fa-lock me-2 text-primary"></i>Şifre
+                            </label>
+                            <input asp-for="Password" type="password" class="form-control" placeholder="Güçlü bir şifre oluşturun" />
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label asp-for="Phone" class="form-label fw-bold">
+                                <i class="fas fa-phone me-2 text-primary"></i>Telefon
+                            </label>
+                            <input asp-for="Phone" class="form-control" placeholder="0555 123 45 67" />
+                            <span asp-validation-for="Phone" class="text-danger small"></span>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label asp-for="BirthDate" class="form-label fw-bold">
+                                <i class="fas fa-calendar me-2 text-primary"></i>Doğum Tarihi
+                            </label>
+                            <input asp-for="BirthDate" type="date" class="form-control" />
+                            <span asp-validation-for="BirthDate" class="text-danger small"></span>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label asp-for="Gender" class="form-label fw-bold">
+                                <i class="fas fa-venus-mars me-2 text-primary"></i>Cinsiyet
+                            </label>
+                            <select asp-for="Gender" class="form-select">
+                                <option value="">Seçiniz</option>
+                                <option value="Erkek">Erkek</option>
+                                <option value="Kadın">Kadın</option>
+                            </select>
+                            <span asp-validation-for="Gender" class="text-danger small"></span>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label asp-for="Profession" class="form-label fw-bold">
+                                <i class="fas fa-briefcase me-2 text-primary"></i>Meslek
+                            </label>
+                            <input asp-for="Profession" class="form-control" placeholder="Mesleğinizi giriniz" />
+                            <span asp-validation-for="Profession" class="text-danger small"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Geri Dön
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-2"></i>Kullanıcı Ekle
+                        </button>
+                    </div>
+                </form>
             </div>
-            
-            <div class="form-group mb-3">
-                <label asp-for="Email" class="control-label">E-posta</label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label asp-for="Password" class="control-label">Şifre</label>
-                <input asp-for="Password" type="password" class="form-control" />
-                <span asp-validation-for="Password" class="text-danger"></span>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label asp-for="Phone" class="control-label">Telefon</label>
-                <input asp-for="Phone" class="form-control" />
-                <span asp-validation-for="Phone" class="text-danger"></span>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label asp-for="BirthDate" class="control-label">Doğum Tarihi</label>
-                <input asp-for="BirthDate" type="date" class="form-control" />
-                <span asp-validation-for="BirthDate" class="text-danger"></span>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label asp-for="Gender" class="control-label">Cinsiyet</label>
-                <select asp-for="Gender" class="form-control">
-                    <option value="">Seçiniz</option>
-                    <option value="Erkek">Erkek</option>
-                    <option value="Kadın">Kadın</option>
-                </select>
-                <span asp-validation-for="Gender" class="text-danger"></span>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label asp-for="Profession" class="control-label">Meslek</label>
-                <input asp-for="Profession" class="form-control" />
-                <span asp-validation-for="Profession" class="text-danger"></span>
-            </div>
-            
-            <div class="form-group">
-                <button type="submit" class="btn btn-primary">Kaydet</button>
-                <a asp-action="Index" class="btn btn-secondary">Geri Dön</a>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 

@@ -4,35 +4,105 @@
     ViewData["Title"] = "Rezervasyonlar";
 }
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Rezervasyonlar</h2>
-        <a asp-action="Create" class="btn btn-primary">Yeni Rezervasyon Ekle</a>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h2 fw-bold text-primary mb-2">
+            <i class="fas fa-ticket-alt me-2"></i>Rezervasyonlar
+        </h1>
+        <p class="text-muted mb-0">Tüm rezervasyonlarınızı görüntüleyin</p>
     </div>
+    <a asp-action="Create" class="btn btn-primary btn-lg">
+        <i class="fas fa-plus me-2"></i>Yeni Rezervasyon Ekle
+    </a>
+</div>
 
-    <div class="row">
+@if (Model != null && Model.Any())
+{
+    <div class="row g-4">
         @foreach (var reservation in Model)
         {
-            <div class="col-md-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">Rezervasyon #@reservation.Id</h5>
-                        <p class="card-text"><strong>Kullanıcı:</strong> @reservation.UserName</p>
-                        <p class="card-text"><strong>Seans:</strong> @reservation.SessionInfo</p>
-                        <p class="card-text"><strong>Tarih:</strong> @reservation.ReservationDate.ToString("dd/MM/yyyy")</p>
-                        <p class="card-text"><strong>Koltuk Sayısı:</strong> @reservation.SeatCount</p>
-                        <p class="card-text"><strong>Toplam Fiyat:</strong> @reservation.TotalPrice.ToString("C")</p>
-                        <p class="card-text"><small class="text-muted">Durum: @reservation.Status</small></p>
+            <div class="col-lg-6 col-md-12">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-header bg-gradient-success text-white py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0 fw-bold">
+                                <i class="fas fa-ticket-alt me-2"></i>Rezervasyon #@reservation.Id
+                            </h5>
+                            <span class="badge bg-light text-dark fs-6">@reservation.TotalPrice.ToString("C")</span>
+                        </div>
                     </div>
-                    <div class="card-footer">
-                        <div class="btn-group w-100" role="group">
-                            <a asp-action="Details" asp-route-id="@reservation.Id" class="btn btn-outline-primary btn-sm">Detay</a>
-                            <a asp-action="Edit" asp-route-id="@reservation.Id" class="btn btn-outline-warning btn-sm">Düzenle</a>
-                            <a asp-action="Delete" asp-route-id="@reservation.Id" class="btn btn-outline-danger btn-sm">Sil</a>
+                    <div class="card-body p-4">
+                        <div class="row g-3 mb-3">
+                            <div class="col-12">
+                                <div class="d-flex align-items-center text-muted">
+                                    <i class="fas fa-user me-2 text-primary"></i>
+                                    <span class="fw-bold">@reservation.UserName</span>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="d-flex align-items-center text-muted">
+                                    <i class="fas fa-film me-2 text-primary"></i>
+                                    <span>@reservation.SessionInfo</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center text-muted">
+                                    <i class="fas fa-calendar me-2 text-primary"></i>
+                                    <span>@reservation.ReservationDate.ToString("dd.MM.yyyy")</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center text-muted">
+                                    <i class="fas fa-chair me-2 text-primary"></i>
+                                    <span>@reservation.SeatCount koltuk</span>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-circle me-2 @(reservation.Status == "Onaylandı" ? "text-success" : reservation.Status == "Beklemede" ? "text-warning" : "text-danger")"></i>
+                                    <span class="@(reservation.Status == "Onaylandı" ? "text-success" : reservation.Status == "Beklemede" ? "text-warning" : "text-danger") fw-bold">
+                                        @reservation.Status
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <a asp-action="Details" asp-route-id="@reservation.Id" class="btn btn-primary">
+                                <i class="fas fa-info-circle me-2"></i>Detaylar
+                            </a>
+                            <div class="btn-group" role="group">
+                                <a asp-action="Edit" asp-route-id="@reservation.Id" class="btn btn-outline-warning">
+                                    <i class="fas fa-edit me-1"></i>Düzenle
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@reservation.Id" class="btn btn-outline-danger">
+                                    <i class="fas fa-trash me-1"></i>Sil
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         }
     </div>
-</div> 
+}
+else
+{
+    <div class="text-center py-5">
+        <div class="card border-0 bg-light">
+            <div class="card-body py-5">
+                <i class="fas fa-ticket-alt fa-4x text-muted mb-3"></i>
+                <h5 class="text-muted">Henüz rezervasyon bulunmuyor</h5>
+                <p class="text-muted mb-4">İlk rezervasyonunuzu oluşturarak başlayın!</p>
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>İlk Rezervasyonu Oluştur
+                </a>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .bg-gradient-success {
+        background: linear-gradient(135deg, #198754, #146c43);
+    }
+</style> 

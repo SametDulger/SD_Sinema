@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using SD_Sinema.Business.DTOs;
 using SD_Sinema.Business.Services;
+using SD_Sinema.Core.Entities;
+using SD_Sinema.Core.Interfaces;
 
 namespace SD_Sinema.API.Controllers
 {
@@ -9,10 +11,12 @@ namespace SD_Sinema.API.Controllers
     public class SeatsController : ControllerBase
     {
         private readonly ISeatService _seatService;
+        private readonly ISeatTypeService _seatTypeService;
 
-        public SeatsController(ISeatService seatService)
+        public SeatsController(ISeatService seatService, ISeatTypeService seatTypeService)
         {
             _seatService = seatService;
+            _seatTypeService = seatTypeService;
         }
 
         [HttpGet]
@@ -27,6 +31,13 @@ namespace SD_Sinema.API.Controllers
         {
             var seats = await _seatService.GetActiveSeatsAsync();
             return Ok(seats);
+        }
+
+        [HttpGet("types")]
+        public async Task<ActionResult<IEnumerable<string>>> GetSeatTypes()
+        {
+            var seatTypeNames = await _seatTypeService.GetActiveSeatTypeNamesAsync();
+            return Ok(seatTypeNames);
         }
 
         [HttpGet("salon/{salonId}")]
@@ -70,12 +81,12 @@ namespace SD_Sinema.API.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                return NotFound(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(int id, [FromQuery] string deletedBy, [FromQuery] string reason)
+        public async Task<ActionResult> Delete(int id, [FromQuery] string deletedBy = "System", [FromQuery] string reason = "Manual deletion")
         {
             try
             {
@@ -84,7 +95,7 @@ namespace SD_Sinema.API.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                return NotFound(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
     }

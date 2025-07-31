@@ -151,7 +151,7 @@ namespace SD_Sinema.Tests.Repositories
             Assert.NotNull(result);
             Assert.NotEqual(0, result.Id);
             Assert.Equal("New Movie", result.Title);
-            Assert.NotNull(result.CreatedDate);
+            Assert.NotEqual(default, result.CreatedDate);
 
             var savedMovie = await _context.Movies.FindAsync(result.Id);
             Assert.NotNull(savedMovie);

@@ -1,49 +1,42 @@
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using SD_Sinema.Web.Models;
 using SD_Sinema.Web.Models.DTOs;
-using System.Text;
+using SD_Sinema.Web.Services;
 
 namespace SD_Sinema.Web.Controllers
 {
     public class TicketTypesController : Controller
     {
-        private readonly HttpClient _httpClient;
+        private readonly IApiService _apiService;
 
-        public TicketTypesController(IHttpClientFactory httpClientFactory)
+        public TicketTypesController(IApiService apiService)
         {
-            _httpClient = httpClientFactory.CreateClient("API");
+            _apiService = apiService;
         }
 
         public async Task<IActionResult> Index()
         {
             try
             {
-                var response = await _httpClient.GetAsync("api/tickettypes");
-                if (response.IsSuccessStatusCode)
+                var ticketTypeDtos = await _apiService.GetAsync<List<TicketTypeDto>>("api/tickettypes");
+                
+                var ticketTypeViewModels = ticketTypeDtos?.Select(t => new TicketTypeViewModel
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var ticketTypeDtos = JsonConvert.DeserializeObject<List<TicketTypeDto>>(content);
-                    
-                    var ticketTypeViewModels = ticketTypeDtos?.Select(t => new TicketTypeViewModel
-                    {
-                        Id = t.Id,
-                        Name = t.Name,
-                        Description = t.Description ?? string.Empty,
-                        Price = t.Price,
-                        IsActive = t.IsActive,
-                        CreatedAt = t.CreatedDate
-                    }).ToList() ?? new List<TicketTypeViewModel>();
-                    
-                    return View(ticketTypeViewModels);
-                }
+                    Id = t.Id,
+                    Name = t.Name,
+                    Description = t.Description ?? string.Empty,
+                    Price = t.Price,
+                    DiscountPercentage = t.DiscountPercentage,
+                    IsActive = t.IsActive,
+                    CreatedAt = t.CreatedDate
+                }).ToList() ?? new List<TicketTypeViewModel>();
+                
+                return View(ticketTypeViewModels);
             }
             catch
             {
-                // API bağlantı hatası
+                return View(new List<TicketTypeViewModel>());
             }
-
-            return View(Enumerable.Empty<TicketTypeViewModel>());
         }
 
         public IActionResult Create()
@@ -62,21 +55,24 @@ namespace SD_Sinema.Web.Controllers
                     {
                         Name = ticketTypeViewModel.Name,
                         Description = ticketTypeViewModel.Description,
-                        Price = ticketTypeViewModel.Price
+                        Price = ticketTypeViewModel.Price,
+                        DiscountPercentage = ticketTypeViewModel.DiscountPercentage,
+                        IsActive = ticketTypeViewModel.IsActive
                     };
 
-                    var json = JsonConvert.SerializeObject(createTicketTypeDto);
-                    var content = new StringContent(json, Encoding.UTF8, "application/json");
-                    var response = await _httpClient.PostAsync("api/tickettypes", content);
-
-                    if (response.IsSuccessStatusCode)
+                    var result = await _apiService.PostAsync<TicketTypeDto>("api/tickettypes", createTicketTypeDto);
+                    if (result != null)
                     {
                         return RedirectToAction(nameof(Index));
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("", "Bilet türü oluşturulurken hata oluştu.");
                     }
                 }
                 catch
                 {
-                    ModelState.AddModelError("", "Bilet tipi oluşturulurken hata oluştu.");
+                    ModelState.AddModelError("", "Bilet türü oluşturulurken hata oluştu.");
                 }
             }
 
@@ -87,34 +83,27 @@ namespace SD_Sinema.Web.Controllers
         {
             try
             {
-                var response = await _httpClient.GetAsync($"api/tickettypes/{id}");
-                if (response.IsSuccessStatusCode)
+                var ticketTypeDto = await _apiService.GetAsync<TicketTypeDto>($"api/tickettypes/{id}");
+                
+                if (ticketTypeDto == null)
+                    return NotFound();
+                
+                var ticketTypeViewModel = new TicketTypeViewModel
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var ticketTypeDto = JsonConvert.DeserializeObject<TicketTypeDto>(content);
-                    
-                    if (ticketTypeDto == null)
-                        return NotFound();
-                    
-                    var ticketTypeViewModel = new TicketTypeViewModel
-                    {
-                        Id = ticketTypeDto.Id,
-                        Name = ticketTypeDto.Name,
-                        Description = ticketTypeDto.Description ?? string.Empty,
-                        Price = ticketTypeDto.Price,
-                        IsActive = ticketTypeDto.IsActive,
-                        CreatedAt = ticketTypeDto.CreatedDate
-                    };
-                    
-                    return View(ticketTypeViewModel);
-                }
+                    Id = ticketTypeDto.Id,
+                    Name = ticketTypeDto.Name,
+                    Description = ticketTypeDto.Description ?? string.Empty,
+                    Price = ticketTypeDto.Price,
+                    DiscountPercentage = ticketTypeDto.DiscountPercentage,
+                    IsActive = ticketTypeDto.IsActive
+                };
+
+                return View(ticketTypeViewModel);
             }
             catch
             {
-                // API bağlantı hatası
+                return NotFound();
             }
-
-            return NotFound();
         }
 
         [HttpPost]
@@ -126,24 +115,26 @@ namespace SD_Sinema.Web.Controllers
                 {
                     var updateTicketTypeDto = new UpdateTicketTypeDto
                     {
-                        Id = id,
                         Name = ticketTypeViewModel.Name,
                         Description = ticketTypeViewModel.Description,
-                        Price = ticketTypeViewModel.Price
+                        Price = ticketTypeViewModel.Price,
+                        DiscountPercentage = ticketTypeViewModel.DiscountPercentage,
+                        IsActive = ticketTypeViewModel.IsActive
                     };
 
-                    var json = JsonConvert.SerializeObject(updateTicketTypeDto);
-                    var content = new StringContent(json, Encoding.UTF8, "application/json");
-                    var response = await _httpClient.PutAsync($"api/tickettypes/{id}", content);
-
-                    if (response.IsSuccessStatusCode)
+                    var result = await _apiService.PutAsync<TicketTypeDto>($"api/tickettypes/{id}", updateTicketTypeDto);
+                    if (result != null)
                     {
                         return RedirectToAction(nameof(Index));
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("", "Bilet türü güncellenirken hata oluştu.");
                     }
                 }
                 catch
                 {
-                    ModelState.AddModelError("", "Bilet tipi güncellenirken hata oluştu.");
+                    ModelState.AddModelError("", "Bilet türü güncellenirken hata oluştu.");
                 }
             }
 
@@ -154,15 +145,47 @@ namespace SD_Sinema.Web.Controllers
         {
             try
             {
-                var response = await _httpClient.DeleteAsync($"api/tickettypes/{id}?deletedBy=Admin&reason=Silme");
-                if (response.IsSuccessStatusCode)
+                var ticketTypeDto = await _apiService.GetAsync<TicketTypeDto>($"api/tickettypes/{id}");
+                
+                if (ticketTypeDto == null)
+                    return NotFound();
+                
+                var ticketTypeViewModel = new TicketTypeViewModel
+                {
+                    Id = ticketTypeDto.Id,
+                    Name = ticketTypeDto.Name,
+                    Description = ticketTypeDto.Description ?? string.Empty,
+                    Price = ticketTypeDto.Price,
+                    DiscountPercentage = ticketTypeDto.DiscountPercentage,
+                    IsActive = ticketTypeDto.IsActive
+                };
+
+                return View(ticketTypeViewModel);
+            }
+            catch
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpPost, ActionName("Delete")]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            try
+            {
+                var success = await _apiService.DeleteAsync($"api/tickettypes/{id}?deletedBy=Admin&reason=Silme");
+                if (success)
                 {
                     return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Bilet türü silinirken hata oluştu.");
                 }
             }
             catch
             {
-                // API bağlantı hatası
+                ModelState.AddModelError("", "Bilet türü silinirken hata oluştu.");
             }
 
             return RedirectToAction(nameof(Index));
@@ -172,34 +195,28 @@ namespace SD_Sinema.Web.Controllers
         {
             try
             {
-                var response = await _httpClient.GetAsync($"api/tickettypes/{id}");
-                if (response.IsSuccessStatusCode)
+                var ticketTypeDto = await _apiService.GetAsync<TicketTypeDto>($"api/tickettypes/{id}");
+                
+                if (ticketTypeDto == null)
+                    return NotFound();
+                
+                var ticketTypeViewModel = new TicketTypeViewModel
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var ticketTypeDto = JsonConvert.DeserializeObject<TicketTypeDto>(content);
-                    
-                    if (ticketTypeDto == null)
-                        return NotFound();
-                    
-                    var ticketTypeViewModel = new TicketTypeViewModel
-                    {
-                        Id = ticketTypeDto.Id,
-                        Name = ticketTypeDto.Name,
-                        Description = ticketTypeDto.Description ?? string.Empty,
-                        Price = ticketTypeDto.Price,
-                        IsActive = ticketTypeDto.IsActive,
-                        CreatedAt = ticketTypeDto.CreatedDate
-                    };
-                    
-                    return View(ticketTypeViewModel);
-                }
+                    Id = ticketTypeDto.Id,
+                    Name = ticketTypeDto.Name,
+                    Description = ticketTypeDto.Description ?? string.Empty,
+                    Price = ticketTypeDto.Price,
+                    DiscountPercentage = ticketTypeDto.DiscountPercentage,
+                    IsActive = ticketTypeDto.IsActive,
+                    CreatedAt = ticketTypeDto.CreatedDate
+                };
+
+                return View(ticketTypeViewModel);
             }
             catch
             {
-                // API bağlantı hatası
+                return NotFound();
             }
-
-            return NotFound();
         }
     }
 } 

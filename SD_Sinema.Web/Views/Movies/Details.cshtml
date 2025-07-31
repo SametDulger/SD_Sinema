@@ -1,42 +1,197 @@
 @model SD_Sinema.Web.Models.MovieViewModel
 
 @{
-    ViewData["Title"] = "Film Detayları";
+    ViewData["Title"] = "Film Detayı";
+    var sessions = ViewBag.Sessions as List<SD_Sinema.Web.Models.DTOs.SessionDto> ?? new List<SD_Sinema.Web.Models.DTOs.SessionDto>();
 }
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card">
-                <div class="card-header">
-                    <h3>Film Detayları</h3>
-                </div>
-                <div class="card-body">
-                    <dl class="row">
-                        <dt class="col-sm-3">Film Adı:</dt>
-                        <dd class="col-sm-9">@Model.Title</dd>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h2 fw-bold text-primary mb-2">
+            <i class="fas fa-film me-2"></i>Film Detayı
+        </h1>
+        <p class="text-muted mb-0">@Model.Title filmi hakkında detaylı bilgiler</p>
+    </div>
+    <a href="@Url.Action("Index", "Movies")" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Geri Dön
+    </a>
+</div>
 
-                        <dt class="col-sm-3">Açıklama:</dt>
-                        <dd class="col-sm-9">@Model.Description</dd>
-
-                        <dt class="col-sm-3">Süre:</dt>
-                        <dd class="col-sm-9">@Model.Duration dakika</dd>
-
-                        <dt class="col-sm-3">Yayın Yılı:</dt>
-                        <dd class="col-sm-9">@Model.ReleaseYear</dd>
-
-                        <dt class="col-sm-3">Tür:</dt>
-                        <dd class="col-sm-9">@Model.Genre</dd>
-
-                        <dt class="col-sm-3">Oluşturulma Tarihi:</dt>
-                        <dd class="col-sm-9">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
-                    </dl>
-                </div>
-                <div class="card-footer">
-                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Düzenle</a>
-                    <a asp-action="Index" class="btn btn-secondary">Geri Dön</a>
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow">
+            <div class="card-header bg-primary text-white py-3">
+                <h3 class="mb-0">
+                    <i class="fas fa-film me-2"></i>@Model.Title
+                </h3>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="bg-gradient-secondary d-flex align-items-center justify-content-center rounded" style="height: 300px;">
+                            <div class="text-center text-white">
+                                <i class="fas fa-film fa-4x mb-3 opacity-75"></i>
+                                <p class="mb-0">Poster Yok</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <h5 class="card-title fw-bold mb-3">@Model.Title</h5>
+                        <p class="card-text text-muted mb-4">@Model.Description</p>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="bg-primary bg-gradient rounded-circle p-2 me-3">
+                                        <i class="fas fa-clock text-white"></i>
+                                    </div>
+                                    <div>
+                                        <strong>Süre:</strong><br>
+                                        <span class="text-muted">@Model.Duration dakika</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="bg-success bg-gradient rounded-circle p-2 me-3">
+                                        <i class="fas fa-calendar text-white"></i>
+                                    </div>
+                                    <div>
+                                        <strong>Yayın Yılı:</strong><br>
+                                        <span class="text-muted">@Model.ReleaseYear</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="bg-warning bg-gradient rounded-circle p-2 me-3">
+                                        <i class="fas fa-tag text-white"></i>
+                                    </div>
+                                    <div>
+                                        <strong>Tür:</strong><br>
+                                        <span class="text-muted">@Model.GenreName</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="bg-info bg-gradient rounded-circle p-2 me-3">
+                                        <i class="fas fa-calendar-plus text-white"></i>
+                                    </div>
+                                    <div>
+                                        <strong>Eklenme Tarihi:</strong><br>
+                                        <span class="text-muted">@Model.CreatedAt.ToString("dd.MM.yyyy")</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div> 
+    
+    <div class="col-lg-4">
+        <div class="card border-0 shadow">
+            <div class="card-header bg-success text-white py-3">
+                <h5 class="mb-0">
+                    <i class="fas fa-ticket-alt me-2"></i>Hızlı İşlemler
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="d-grid gap-3">
+                    <a href="@Url.Action("Create", "Sessions", new { movieId = Model.Id })" class="btn btn-success">
+                        <i class="fas fa-plus me-2"></i>Seans Ekle
+                    </a>
+                    <a href="@Url.Action("Edit", "Movies", new { id = Model.Id })" class="btn btn-primary">
+                        <i class="fas fa-edit me-2"></i>Düzenle
+                    </a>
+                    <a href="@Url.Action("Delete", "Movies", new { id = Model.Id })" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Sil
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (sessions.Any())
+{
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-info text-white py-3">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>Film Seansları
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        @foreach (var session in sessions)
+                        {
+                            <div class="col-lg-6 col-md-12">
+                                <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-body p-4">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <h6 class="card-title fw-bold mb-0">
+                                                <i class="fas fa-building me-2 text-primary"></i>@session.SalonName
+                                            </h6>
+                                            <span class="badge bg-success fs-6">@session.Price.ToString("C")</span>
+                                        </div>
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-6">
+                                                <div class="d-flex align-items-center text-muted">
+                                                    <i class="fas fa-calendar me-2 text-primary"></i>
+                                                    <span>@session.SessionDate.ToString("dd.MM.yyyy")</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="d-flex align-items-center text-muted">
+                                                    <i class="fas fa-clock me-2 text-primary"></i>
+                                                    <span>@session.StartTime.ToString(@"hh\:mm") - @session.EndTime.ToString(@"hh\:mm")</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="d-grid gap-2">
+                                            <a href="@Url.Action("Details", "Sessions", new { id = session.Id })" class="btn btn-primary">
+                                                <i class="fas fa-info-circle me-2"></i>Detay
+                                            </a>
+                                            <a href="@Url.Action("Create", "Reservations", new { sessionId = session.Id })" class="btn btn-success">
+                                                <i class="fas fa-ticket-alt me-2"></i>Rezervasyon
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card border-0 shadow">
+                <div class="card-body p-4">
+                    <div class="text-center">
+                        <i class="fas fa-calendar-alt fa-4x text-muted mb-3"></i>
+                        <h5 class="text-muted mb-3">Bu film için henüz seans bulunmuyor</h5>
+                        <p class="text-muted mb-4">İlk seansınızı ekleyerek başlayın!</p>
+                        <a href="@Url.Action("Create", "Sessions", new { movieId = Model.Id })" class="btn btn-success">
+                            <i class="fas fa-plus me-2"></i>Seans Ekle
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .bg-gradient-secondary {
+        background: linear-gradient(135deg, #6c757d, #495057);
+    }
+    
+    .opacity-75 {
+        opacity: 0.75;
+    }
+</style> 

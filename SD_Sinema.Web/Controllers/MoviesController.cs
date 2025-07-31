@@ -1,54 +1,60 @@
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using SD_Sinema.Web.Models;
 using SD_Sinema.Web.Models.DTOs;
-using System.Text;
+using SD_Sinema.Web.Services;
 
 namespace SD_Sinema.Web.Controllers
 {
     public class MoviesController : Controller
     {
-        private readonly HttpClient _httpClient;
+        private readonly IApiService _apiService;
 
-        public MoviesController(IHttpClientFactory httpClientFactory)
+        public MoviesController(IApiService apiService)
         {
-            _httpClient = httpClientFactory.CreateClient("API");
+            _apiService = apiService;
         }
 
         public async Task<IActionResult> Index()
         {
             try
             {
-                var response = await _httpClient.GetAsync("api/movies");
-                if (response.IsSuccessStatusCode)
+                var movieDtos = await _apiService.GetAsync<List<MovieDto>>("api/movies");
+                
+                var movieViewModels = movieDtos?.Select(m => new MovieViewModel
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var movieDtos = JsonConvert.DeserializeObject<List<MovieDto>>(content);
-                    
-                    var movieViewModels = movieDtos?.Select(m => new MovieViewModel
-                    {
-                        Id = m.Id,
-                        Title = m.Title,
-                        Description = m.Description ?? string.Empty,
-                        Duration = m.Duration,
-                        ReleaseYear = m.ReleaseDate.Year,
-                        Genre = m.Genre ?? string.Empty,
-                        CreatedAt = m.CreatedDate
-                    }).ToList() ?? new List<MovieViewModel>();
-                    
-                    return View(movieViewModels);
-                }
+                    Id = m.Id,
+                    Title = m.Title,
+                    Description = m.Description ?? string.Empty,
+                    Duration = m.Duration,
+                    ReleaseYear = m.ReleaseDate.Year,
+                    GenreId = m.GenreId,
+                    GenreName = m.GenreName ?? string.Empty,
+                    CreatedAt = m.CreatedDate
+                }).ToList() ?? new List<MovieViewModel>();
+                
+                return View(movieViewModels);
             }
             catch
             {
                 // API bağlantı hatası
+                return View(new List<MovieViewModel>());
             }
-
-            return View(Enumerable.Empty<MovieViewModel>());
         }
 
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            try
+            {
+                // Film türleri için API'den veri al
+                var genres = await _apiService.GetAsync<List<string>>("api/movies/genres");
+                ViewBag.Genres = genres?.Select(g => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = g, Text = g }).ToList() 
+                    ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+            }
+            catch
+            {
+                ViewBag.Genres = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+            }
+
             return View(new MovieViewModel());
         }
 
@@ -64,7 +70,7 @@ namespace SD_Sinema.Web.Controllers
                         Title = movieViewModel.Title,
                         Description = movieViewModel.Description,
                         Duration = movieViewModel.Duration,
-                        Genre = movieViewModel.Genre,
+                        GenreId = movieViewModel.GenreId,
                         Director = "",
                         Cast = "",
                         PosterUrl = "",
@@ -73,19 +79,32 @@ namespace SD_Sinema.Web.Controllers
                         EndDate = null
                     };
 
-                    var json = JsonConvert.SerializeObject(createMovieDto);
-                    var content = new StringContent(json, Encoding.UTF8, "application/json");
-                    var response = await _httpClient.PostAsync("api/movies", content);
-
-                    if (response.IsSuccessStatusCode)
+                    var result = await _apiService.PostAsync<MovieDto>("api/movies", createMovieDto);
+                    if (result != null)
                     {
                         return RedirectToAction(nameof(Index));
                     }
+                    else
+                    {
+                        ModelState.AddModelError("", "Film oluşturulurken hata oluştu.");
+                    }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    ModelState.AddModelError("", "Film oluşturulurken hata oluştu.");
+                    ModelState.AddModelError("", $"Film oluşturulurken hata oluştu: {ex.Message}");
                 }
+            }
+
+            // Hata durumunda dropdown'ları tekrar doldur
+            try
+            {
+                var genres = await _apiService.GetAsync<List<string>>("api/movies/genres");
+                ViewBag.Genres = genres?.Select(g => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = g, Text = g }).ToList() 
+                    ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+            }
+            catch
+            {
+                ViewBag.Genres = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
             }
 
             return View(movieViewModel);
@@ -95,35 +114,34 @@ namespace SD_Sinema.Web.Controllers
         {
             try
             {
-                var response = await _httpClient.GetAsync($"api/movies/{id}");
-                if (response.IsSuccessStatusCode)
+                var movieDto = await _apiService.GetAsync<MovieDto>($"api/movies/{id}");
+                
+                if (movieDto == null)
+                    return NotFound();
+                
+                var movieViewModel = new MovieViewModel
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var movieDto = JsonConvert.DeserializeObject<MovieDto>(content);
-                    
-                    if (movieDto == null)
-                        return NotFound();
-                    
-                    var movieViewModel = new MovieViewModel
-                    {
-                        Id = movieDto.Id,
-                        Title = movieDto.Title,
-                        Description = movieDto.Description ?? string.Empty,
-                        Duration = movieDto.Duration,
-                        ReleaseYear = movieDto.ReleaseDate.Year,
-                        Genre = movieDto.Genre ?? string.Empty,
-                        CreatedAt = movieDto.CreatedDate
-                    };
-                    
-                    return View(movieViewModel);
-                }
+                    Id = movieDto.Id,
+                    Title = movieDto.Title,
+                    Description = movieDto.Description ?? string.Empty,
+                    Duration = movieDto.Duration,
+                    ReleaseYear = movieDto.ReleaseDate.Year,
+                    GenreId = movieDto.GenreId,
+                    GenreName = movieDto.GenreName ?? string.Empty,
+                    CreatedAt = movieDto.CreatedDate
+                };
+
+                // Film türleri için API'den veri al
+                var genres = await _apiService.GetAsync<List<string>>("api/movies/genres");
+                ViewBag.Genres = genres?.Select(g => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = g, Text = g }).ToList() 
+                    ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+                
+                return View(movieViewModel);
             }
             catch
             {
-                // API bağlantı hatası
+                return NotFound();
             }
-
-            return NotFound();
         }
 
         [HttpPost]
@@ -138,29 +156,41 @@ namespace SD_Sinema.Web.Controllers
                         Title = movieViewModel.Title,
                         Description = movieViewModel.Description,
                         Duration = movieViewModel.Duration,
-                        Genre = movieViewModel.Genre,
+                        GenreId = movieViewModel.GenreId,
                         Director = "",
                         Cast = "",
                         PosterUrl = "",
                         TrailerUrl = "",
                         ReleaseDate = new DateTime(movieViewModel.ReleaseYear, 1, 1),
-                        EndDate = null,
-                        IsActive = true
+                        EndDate = null
                     };
 
-                    var json = JsonConvert.SerializeObject(updateMovieDto);
-                    var content = new StringContent(json, Encoding.UTF8, "application/json");
-                    var response = await _httpClient.PutAsync($"api/movies/{id}", content);
-
-                    if (response.IsSuccessStatusCode)
+                    var result = await _apiService.PutAsync<MovieDto>($"api/movies/{id}", updateMovieDto);
+                    if (result != null)
                     {
                         return RedirectToAction(nameof(Index));
                     }
+                    else
+                    {
+                        ModelState.AddModelError("", "Film güncellenirken hata oluştu.");
+                    }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    ModelState.AddModelError("", "Film güncellenirken hata oluştu.");
+                    ModelState.AddModelError("", $"Film güncellenirken hata oluştu: {ex.Message}");
                 }
+            }
+
+            // Hata durumunda dropdown'ları tekrar doldur
+            try
+            {
+                var genres = await _apiService.GetAsync<List<string>>("api/movies/genres");
+                ViewBag.Genres = genres?.Select(g => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = g, Text = g }).ToList() 
+                    ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+            }
+            catch
+            {
+                ViewBag.Genres = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
             }
 
             return View(movieViewModel);
@@ -170,15 +200,49 @@ namespace SD_Sinema.Web.Controllers
         {
             try
             {
-                var response = await _httpClient.DeleteAsync($"api/movies/{id}?deletedBy=Admin&reason=Silme");
-                if (response.IsSuccessStatusCode)
+                var movieDto = await _apiService.GetAsync<MovieDto>($"api/movies/{id}");
+                
+                if (movieDto == null)
+                    return NotFound();
+                
+                var movieViewModel = new MovieViewModel
                 {
-                    return RedirectToAction(nameof(Index));
-                }
+                    Id = movieDto.Id,
+                    Title = movieDto.Title,
+                    Description = movieDto.Description ?? string.Empty,
+                    Duration = movieDto.Duration,
+                    ReleaseYear = movieDto.ReleaseDate.Year,
+                    GenreId = movieDto.GenreId,
+                    GenreName = movieDto.GenreName ?? string.Empty,
+                    CreatedAt = movieDto.CreatedDate
+                };
+                
+                return View(movieViewModel);
             }
             catch
             {
-                // API bağlantı hatası
+                return NotFound();
+            }
+        }
+
+        [HttpPost, ActionName("Delete")]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            try
+            {
+                var success = await _apiService.DeleteAsync($"api/movies/{id}");
+                if (success)
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Film silinirken hata oluştu.");
+                }
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", $"Film silinirken hata oluştu: {ex.Message}");
             }
 
             return RedirectToAction(nameof(Index));
@@ -188,35 +252,33 @@ namespace SD_Sinema.Web.Controllers
         {
             try
             {
-                var response = await _httpClient.GetAsync($"api/movies/{id}");
-                if (response.IsSuccessStatusCode)
+                var movieDto = await _apiService.GetAsync<MovieDto>($"api/movies/{id}");
+                
+                if (movieDto == null)
+                    return NotFound();
+                
+                var movieViewModel = new MovieViewModel
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var movieDto = JsonConvert.DeserializeObject<MovieDto>(content);
-                    
-                    if (movieDto == null)
-                        return NotFound();
-                    
-                    var movieViewModel = new MovieViewModel
-                    {
-                        Id = movieDto.Id,
-                        Title = movieDto.Title,
-                        Description = movieDto.Description ?? string.Empty,
-                        Duration = movieDto.Duration,
-                        ReleaseYear = movieDto.ReleaseDate.Year,
-                        Genre = movieDto.Genre ?? string.Empty,
-                        CreatedAt = movieDto.CreatedDate
-                    };
-                    
-                    return View(movieViewModel);
-                }
+                    Id = movieDto.Id,
+                    Title = movieDto.Title,
+                    Description = movieDto.Description ?? string.Empty,
+                    Duration = movieDto.Duration,
+                    ReleaseYear = movieDto.ReleaseDate.Year,
+                    GenreId = movieDto.GenreId,
+                    GenreName = movieDto.GenreName ?? string.Empty,
+                    CreatedAt = movieDto.CreatedDate
+                };
+
+                // Film seanslarını da al
+                var sessionDtos = await _apiService.GetAsync<List<SessionDto>>($"api/sessions/movie/{id}");
+                ViewBag.Sessions = sessionDtos?.Take(5).ToList() ?? new List<SessionDto>();
+                
+                return View(movieViewModel);
             }
             catch
             {
-                // API bağlantı hatası
+                return NotFound();
             }
-
-            return NotFound();
         }
     }
 } 

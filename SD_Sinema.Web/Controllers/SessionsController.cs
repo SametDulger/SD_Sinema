@@ -1,52 +1,52 @@
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using SD_Sinema.Web.Models;
 using SD_Sinema.Web.Models.DTOs;
-using System.Text;
+using SD_Sinema.Web.Services;
 
 namespace SD_Sinema.Web.Controllers
 {
     public class SessionsController : Controller
     {
-        private readonly HttpClient _httpClient;
+        private readonly IApiService _apiService;
 
-        public SessionsController(IHttpClientFactory httpClientFactory)
+        public SessionsController(IApiService apiService)
         {
-            _httpClient = httpClientFactory.CreateClient("API");
+            _apiService = apiService;
         }
 
         public async Task<IActionResult> Index()
         {
             try
             {
-                var response = await _httpClient.GetAsync("api/sessions");
-                if (response.IsSuccessStatusCode)
+                var sessionDtos = await _apiService.GetAsync<List<SessionDto>>("api/sessions");
+                
+                var sessionViewModels = sessionDtos?.Select(s => new SessionViewModel
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var sessionDtos = JsonConvert.DeserializeObject<List<SessionDto>>(content);
-                    
-                    var sessionViewModels = sessionDtos?.Select(s => new SessionViewModel
-                    {
-                        Id = s.Id,
-                        MovieId = s.MovieId,
-                        SalonId = s.SalonId,
-                        StartTime = s.SessionDate.Date.Add(s.StartTime),
-                        Price = s.Price,
-                        IsActive = s.IsActive,
-                        CreatedAt = s.CreatedDate,
-                        MovieTitle = s.MovieTitle,
-                        SalonName = s.SalonName
-                    }).ToList() ?? new List<SessionViewModel>();
-                    
-                    return View(sessionViewModels);
-                }
+                    Id = s.Id,
+                    MovieId = s.MovieId,
+                    SalonId = s.SalonId,
+                    SessionDate = s.SessionDate,
+                    StartTime = s.SessionDate.Add(s.StartTime),
+                    EndTime = s.SessionDate.Add(s.EndTime),
+                    IsActive = s.IsActive,
+                    IsSpecialSession = s.IsSpecialSession,
+                    SpecialSessionName = s.SpecialSessionName,
+                    Price = s.Price,
+                    CreatedAt = s.CreatedDate,
+                    MovieTitle = s.MovieTitle,
+                    SalonName = s.SalonName
+                }).ToArray() ?? new SessionViewModel[0];
+                
+                // Ensure we return a List, not an array
+                var sessionList = new List<SessionViewModel>(sessionViewModels);
+                
+                return View(sessionList);
             }
             catch
             {
                 // API bağlantı hatası
+                return View(new List<SessionViewModel>());
             }
-
-            return View(Enumerable.Empty<SessionViewModel>());
         }
 
         public async Task<IActionResult> Create()
@@ -54,30 +54,20 @@ namespace SD_Sinema.Web.Controllers
             try
             {
                 // Film listesini yükle
-                var moviesResponse = await _httpClient.GetAsync("api/movies");
-                if (moviesResponse.IsSuccessStatusCode)
+                var movieDtos = await _apiService.GetAsync<List<MovieDto>>("api/movies");
+                ViewBag.Movies = movieDtos?.Select(m => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
                 {
-                    var moviesContent = await moviesResponse.Content.ReadAsStringAsync();
-                    var movieDtos = JsonConvert.DeserializeObject<List<MovieDto>>(moviesContent);
-                    ViewBag.Movies = movieDtos?.Select(m => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                    {
-                        Value = m.Id.ToString(),
-                        Text = m.Title
-                    }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
+                    Value = m.Id.ToString(),
+                    Text = m.Title
+                }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
 
                 // Salon listesini yükle
-                var salonsResponse = await _httpClient.GetAsync("api/salons");
-                if (salonsResponse.IsSuccessStatusCode)
+                var salonDtos = await _apiService.GetAsync<List<SalonDto>>("api/salons");
+                ViewBag.Salons = salonDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
                 {
-                    var salonsContent = await salonsResponse.Content.ReadAsStringAsync();
-                    var salonDtos = JsonConvert.DeserializeObject<List<SalonDto>>(salonsContent);
-                    ViewBag.Salons = salonDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                    {
-                        Value = s.Id.ToString(),
-                        Text = s.Name
-                    }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
+                    Value = s.Id.ToString(),
+                    Text = s.Name
+                }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
             }
             catch
             {
@@ -99,60 +89,49 @@ namespace SD_Sinema.Web.Controllers
                     {
                         MovieId = sessionViewModel.MovieId,
                         SalonId = sessionViewModel.SalonId,
-                        SessionDate = sessionViewModel.StartTime.Date,
+                        SessionDate = sessionViewModel.SessionDate,
                         StartTime = sessionViewModel.StartTime.TimeOfDay,
+                        EndTime = sessionViewModel.EndTime.TimeOfDay,
+                        IsActive = sessionViewModel.IsActive,
+                        IsSpecialSession = sessionViewModel.IsSpecialSession,
+                        SpecialSessionName = sessionViewModel.SpecialSessionName,
                         Price = sessionViewModel.Price
                     };
 
-                    var json = JsonConvert.SerializeObject(createSessionDto);
-                    var content = new StringContent(json, Encoding.UTF8, "application/json");
-                    var response = await _httpClient.PostAsync("api/sessions", content);
-
-                    if (response.IsSuccessStatusCode)
+                    var result = await _apiService.PostAsync<SessionDto>("api/sessions", createSessionDto);
+                    if (result != null)
                     {
                         return RedirectToAction(nameof(Index));
                     }
+                    else
+                    {
+                        ModelState.AddModelError("", "Seans oluşturulurken hata oluştu.");
+                    }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    ModelState.AddModelError("", "Seans oluşturulurken hata oluştu.");
+                    ModelState.AddModelError("", $"Seans oluşturulurken hata oluştu: {ex.Message}");
                 }
             }
 
-            // Hata durumunda film ve salon listelerini tekrar yükle
+            // Hata durumunda dropdown'ları tekrar doldur
             try
             {
-                var moviesResponse = await _httpClient.GetAsync("api/movies");
-                if (moviesResponse.IsSuccessStatusCode)
+                // Film listesini yükle
+                var movieDtos = await _apiService.GetAsync<List<MovieDto>>("api/movies");
+                ViewBag.Movies = movieDtos?.Select(m => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
                 {
-                    var moviesContent = await moviesResponse.Content.ReadAsStringAsync();
-                    var movieDtos = JsonConvert.DeserializeObject<List<MovieDto>>(moviesContent);
-                    ViewBag.Movies = movieDtos?.Select(m => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                    {
-                        Value = m.Id.ToString(),
-                        Text = m.Title
-                    }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
-                else
-                {
-                    ViewBag.Movies = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
+                    Value = m.Id.ToString(),
+                    Text = m.Title
+                }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
 
-                var salonsResponse = await _httpClient.GetAsync("api/salons");
-                if (salonsResponse.IsSuccessStatusCode)
+                // Salon listesini yükle
+                var salonDtos = await _apiService.GetAsync<List<SalonDto>>("api/salons");
+                ViewBag.Salons = salonDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
                 {
-                    var salonsContent = await salonsResponse.Content.ReadAsStringAsync();
-                    var salonDtos = JsonConvert.DeserializeObject<List<SalonDto>>(salonsContent);
-                    ViewBag.Salons = salonDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                    {
-                        Value = s.Id.ToString(),
-                        Text = s.Name
-                    }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
-                else
-                {
-                    ViewBag.Salons = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
+                    Value = s.Id.ToString(),
+                    Text = s.Name
+                }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
             }
             catch
             {
@@ -167,63 +146,50 @@ namespace SD_Sinema.Web.Controllers
         {
             try
             {
-                var response = await _httpClient.GetAsync($"api/sessions/{id}");
-                if (response.IsSuccessStatusCode)
+                var sessionDto = await _apiService.GetAsync<SessionDto>($"api/sessions/{id}");
+                
+                if (sessionDto == null)
+                    return NotFound();
+                
+                var sessionViewModel = new SessionViewModel
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var sessionDto = JsonConvert.DeserializeObject<SessionDto>(content);
-                    
-                    if (sessionDto == null)
-                        return NotFound();
-                    
-                    var sessionViewModel = new SessionViewModel
-                    {
-                        Id = sessionDto.Id,
-                        MovieId = sessionDto.MovieId,
-                        SalonId = sessionDto.SalonId,
-                        StartTime = sessionDto.SessionDate.Date.Add(sessionDto.StartTime),
-                        Price = sessionDto.Price,
-                        IsActive = sessionDto.IsActive,
-                        CreatedAt = sessionDto.CreatedDate,
-                        MovieTitle = sessionDto.MovieTitle ?? string.Empty,
-                        SalonName = sessionDto.SalonName ?? string.Empty
-                    };
+                    Id = sessionDto.Id,
+                    MovieId = sessionDto.MovieId,
+                    SalonId = sessionDto.SalonId,
+                    SessionDate = sessionDto.SessionDate,
+                    StartTime = sessionDto.SessionDate.Add(sessionDto.StartTime),
+                    EndTime = sessionDto.SessionDate.Add(sessionDto.EndTime),
+                    IsActive = sessionDto.IsActive,
+                    IsSpecialSession = sessionDto.IsSpecialSession,
+                    SpecialSessionName = sessionDto.SpecialSessionName,
+                    Price = sessionDto.Price,
+                    CreatedAt = sessionDto.CreatedDate,
+                    MovieTitle = sessionDto.MovieTitle,
+                    SalonName = sessionDto.SalonName
+                };
 
-                    // Film listesini yükle
-                    var moviesResponse = await _httpClient.GetAsync("api/movies");
-                    if (moviesResponse.IsSuccessStatusCode)
-                    {
-                        var moviesContent = await moviesResponse.Content.ReadAsStringAsync();
-                        var movieDtos = JsonConvert.DeserializeObject<List<MovieDto>>(moviesContent);
-                        ViewBag.Movies = movieDtos?.Select(m => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                        {
-                            Value = m.Id.ToString(),
-                            Text = m.Title
-                        }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                    }
+                // Film listesini yükle
+                var movieDtos = await _apiService.GetAsync<List<MovieDto>>("api/movies");
+                ViewBag.Movies = movieDtos?.Select(m => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                {
+                    Value = m.Id.ToString(),
+                    Text = m.Title
+                }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
 
-                    // Salon listesini yükle
-                    var salonsResponse = await _httpClient.GetAsync("api/salons");
-                    if (salonsResponse.IsSuccessStatusCode)
-                    {
-                        var salonsContent = await salonsResponse.Content.ReadAsStringAsync();
-                        var salonDtos = JsonConvert.DeserializeObject<List<SalonDto>>(salonsContent);
-                        ViewBag.Salons = salonDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                        {
-                            Value = s.Id.ToString(),
-                            Text = s.Name
-                        }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                    }
-                    
-                    return View(sessionViewModel);
-                }
+                // Salon listesini yükle
+                var salonDtos = await _apiService.GetAsync<List<SalonDto>>("api/salons");
+                ViewBag.Salons = salonDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                {
+                    Value = s.Id.ToString(),
+                    Text = s.Name
+                }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+                
+                return View(sessionViewModel);
             }
             catch
             {
-                // API bağlantı hatası
+                return NotFound();
             }
-
-            return NotFound();
         }
 
         [HttpPost]
@@ -238,61 +204,49 @@ namespace SD_Sinema.Web.Controllers
                         Id = id,
                         MovieId = sessionViewModel.MovieId,
                         SalonId = sessionViewModel.SalonId,
-                        SessionDate = sessionViewModel.StartTime.Date,
+                        SessionDate = sessionViewModel.SessionDate,
                         StartTime = sessionViewModel.StartTime.TimeOfDay,
+                        EndTime = sessionViewModel.EndTime.TimeOfDay,
                         IsActive = sessionViewModel.IsActive,
+                        IsSpecialSession = sessionViewModel.IsSpecialSession,
+                        SpecialSessionName = sessionViewModel.SpecialSessionName,
                         Price = sessionViewModel.Price
                     };
 
-                    var json = JsonConvert.SerializeObject(updateSessionDto);
-                    var content = new StringContent(json, Encoding.UTF8, "application/json");
-                    var response = await _httpClient.PutAsync($"api/sessions/{id}", content);
-
-                    if (response.IsSuccessStatusCode)
+                    var result = await _apiService.PutAsync<SessionDto>($"api/sessions/{id}", updateSessionDto);
+                    if (result != null)
                     {
                         return RedirectToAction(nameof(Index));
                     }
+                    else
+                    {
+                        ModelState.AddModelError("", "Seans güncellenirken hata oluştu.");
+                    }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    ModelState.AddModelError("", "Seans güncellenirken hata oluştu.");
+                    ModelState.AddModelError("", $"Seans güncellenirken hata oluştu: {ex.Message}");
                 }
             }
 
-            // Hata durumunda film ve salon listelerini tekrar yükle
+            // Hata durumunda dropdown'ları tekrar doldur
             try
             {
-                var moviesResponse = await _httpClient.GetAsync("api/movies");
-                if (moviesResponse.IsSuccessStatusCode)
+                // Film listesini yükle
+                var movieDtos = await _apiService.GetAsync<List<MovieDto>>("api/movies");
+                ViewBag.Movies = movieDtos?.Select(m => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
                 {
-                    var moviesContent = await moviesResponse.Content.ReadAsStringAsync();
-                    var movieDtos = JsonConvert.DeserializeObject<List<MovieDto>>(moviesContent);
-                    ViewBag.Movies = movieDtos?.Select(m => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                    {
-                        Value = m.Id.ToString(),
-                        Text = m.Title
-                    }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
-                else
-                {
-                    ViewBag.Movies = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
+                    Value = m.Id.ToString(),
+                    Text = m.Title
+                }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
 
-                var salonsResponse = await _httpClient.GetAsync("api/salons");
-                if (salonsResponse.IsSuccessStatusCode)
+                // Salon listesini yükle
+                var salonDtos = await _apiService.GetAsync<List<SalonDto>>("api/salons");
+                ViewBag.Salons = salonDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
                 {
-                    var salonsContent = await salonsResponse.Content.ReadAsStringAsync();
-                    var salonDtos = JsonConvert.DeserializeObject<List<SalonDto>>(salonsContent);
-                    ViewBag.Salons = salonDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                    {
-                        Value = s.Id.ToString(),
-                        Text = s.Name
-                    }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
-                else
-                {
-                    ViewBag.Salons = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
+                    Value = s.Id.ToString(),
+                    Text = s.Name
+                }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
             }
             catch
             {
@@ -307,15 +261,54 @@ namespace SD_Sinema.Web.Controllers
         {
             try
             {
-                var response = await _httpClient.DeleteAsync($"api/sessions/{id}?deletedBy=Admin&reason=Silme");
-                if (response.IsSuccessStatusCode)
+                var sessionDto = await _apiService.GetAsync<SessionDto>($"api/sessions/{id}");
+                
+                if (sessionDto == null)
+                    return NotFound();
+                
+                var sessionViewModel = new SessionViewModel
                 {
-                    return RedirectToAction(nameof(Index));
-                }
+                    Id = sessionDto.Id,
+                    MovieId = sessionDto.MovieId,
+                    SalonId = sessionDto.SalonId,
+                    SessionDate = sessionDto.SessionDate,
+                    StartTime = sessionDto.SessionDate.Add(sessionDto.StartTime),
+                    EndTime = sessionDto.SessionDate.Add(sessionDto.EndTime),
+                    IsActive = sessionDto.IsActive,
+                    IsSpecialSession = sessionDto.IsSpecialSession,
+                    SpecialSessionName = sessionDto.SpecialSessionName,
+                    Price = sessionDto.Price,
+                    CreatedAt = sessionDto.CreatedDate,
+                    MovieTitle = sessionDto.MovieTitle,
+                    SalonName = sessionDto.SalonName
+                };
+                
+                return View(sessionViewModel);
             }
             catch
             {
-                // API bağlantı hatası
+                return NotFound();
+            }
+        }
+
+        [HttpPost, ActionName("Delete")]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            try
+            {
+                var success = await _apiService.DeleteAsync($"api/sessions/{id}");
+                if (success)
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Seans silinirken hata oluştu.");
+                }
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", $"Seans silinirken hata oluştu: {ex.Message}");
             }
 
             return RedirectToAction(nameof(Index));
@@ -325,37 +318,34 @@ namespace SD_Sinema.Web.Controllers
         {
             try
             {
-                var response = await _httpClient.GetAsync($"api/sessions/{id}");
-                if (response.IsSuccessStatusCode)
+                var sessionDto = await _apiService.GetAsync<SessionDto>($"api/sessions/{id}");
+                
+                if (sessionDto == null)
+                    return NotFound();
+                
+                var sessionViewModel = new SessionViewModel
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var sessionDto = JsonConvert.DeserializeObject<SessionDto>(content);
-                    
-                    if (sessionDto == null)
-                        return NotFound();
-                    
-                    var sessionViewModel = new SessionViewModel
-                    {
-                        Id = sessionDto.Id,
-                        MovieId = sessionDto.MovieId,
-                        SalonId = sessionDto.SalonId,
-                        StartTime = sessionDto.SessionDate.Date.Add(sessionDto.StartTime),
-                        Price = sessionDto.Price,
-                        IsActive = sessionDto.IsActive,
-                        CreatedAt = sessionDto.CreatedDate,
-                        MovieTitle = sessionDto.MovieTitle ?? string.Empty,
-                        SalonName = sessionDto.SalonName ?? string.Empty
-                    };
-                    
-                    return View(sessionViewModel);
-                }
+                    Id = sessionDto.Id,
+                    MovieId = sessionDto.MovieId,
+                    SalonId = sessionDto.SalonId,
+                    SessionDate = sessionDto.SessionDate,
+                    StartTime = sessionDto.SessionDate.Add(sessionDto.StartTime),
+                    EndTime = sessionDto.SessionDate.Add(sessionDto.EndTime),
+                    IsActive = sessionDto.IsActive,
+                    IsSpecialSession = sessionDto.IsSpecialSession,
+                    SpecialSessionName = sessionDto.SpecialSessionName,
+                    Price = sessionDto.Price,
+                    CreatedAt = sessionDto.CreatedDate,
+                    MovieTitle = sessionDto.MovieTitle,
+                    SalonName = sessionDto.SalonName
+                };
+                
+                return View(sessionViewModel);
             }
             catch
             {
-                // API bağlantı hatası
+                return NotFound();
             }
-
-            return NotFound();
         }
     }
 } 

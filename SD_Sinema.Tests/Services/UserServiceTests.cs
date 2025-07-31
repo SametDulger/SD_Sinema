@@ -75,7 +75,7 @@ namespace SD_Sinema.Tests.Services
         public async Task GetByIdAsync_WithInvalidId_ShouldReturnNull()
         {
             // Arrange
-            _mockUnitOfWork.Setup(x => x.Users.GetByIdAsync(999)).ReturnsAsync((User)null);
+            _mockUnitOfWork.Setup(x => x.Users.GetByIdAsync(999)).ReturnsAsync((User?)null);
 
             // Act
             var result = await _userService.GetByIdAsync(999);
@@ -89,7 +89,7 @@ namespace SD_Sinema.Tests.Services
         public async Task GetByIdAsync_WithZeroId_ShouldReturnNull()
         {
             // Arrange
-            _mockUnitOfWork.Setup(x => x.Users.GetByIdAsync(0)).ReturnsAsync((User)null);
+            _mockUnitOfWork.Setup(x => x.Users.GetByIdAsync(0)).ReturnsAsync((User?)null);
 
             // Act
             var result = await _userService.GetByIdAsync(0);
@@ -137,7 +137,7 @@ namespace SD_Sinema.Tests.Services
         public async Task CreateAsync_WithNullDto_ShouldThrowArgumentNullException()
         {
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.CreateAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _userService.CreateAsync(null!));
         }
 
         [Fact]
@@ -230,7 +230,7 @@ namespace SD_Sinema.Tests.Services
         {
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentNullException>(() => 
-                _userService.UpdateAsync(1, null));
+                _userService.UpdateAsync(1, null!));
         }
 
         [Fact]

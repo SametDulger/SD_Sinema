@@ -1,22 +1,297 @@
 @{
     ViewData["Title"] = "İletişim";
+    var salons = ViewBag.Salons as List<SD_Sinema.Web.Models.DTOs.SalonDto> ?? new List<SD_Sinema.Web.Models.DTOs.SalonDto>();
 }
 
-<div class="text-center">
-    <h1 class="display-4">İletişim</h1>
-    <p>Bizimle iletişime geçin.</p>
+<!-- Hero Section -->
+<div class="text-center mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h1 class="display-3 fw-bold text-primary mb-3">
+                <i class="fas fa-address-book me-3"></i>İletişim
+            </h1>
+            <p class="lead fs-4 text-muted mb-4">Bizimle iletişime geçin, size yardımcı olmaktan mutluluk duyarız.</p>
+        </div>
+    </div>
 </div>
 
+<!-- İletişim Bilgileri ve Çalışma Saatleri -->
+<div class="row g-4 mb-5">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow h-100">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="bg-primary bg-gradient rounded-circle p-3 me-3">
+                        <i class="fas fa-address-book fa-2x text-white"></i>
+                    </div>
+                    <h3 class="card-title mb-0 fw-bold">İletişim Bilgileri</h3>
+                </div>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-danger bg-gradient rounded-circle p-2 me-3">
+                                <i class="fas fa-map-marker-alt text-white"></i>
+                            </div>
+                            <div>
+                                <strong>Adres:</strong><br>
+                                <span class="text-muted">Örnek Mahallesi, Örnek Sokak No:1, İstanbul</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-success bg-gradient rounded-circle p-2 me-3">
+                                <i class="fas fa-phone text-white"></i>
+                            </div>
+                            <div>
+                                <strong>Telefon:</strong><br>
+                                <span class="text-muted">+90 212 123 45 67</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-info bg-gradient rounded-circle p-2 me-3">
+                                <i class="fas fa-envelope text-white"></i>
+                            </div>
+                            <div>
+                                <strong>E-posta:</strong><br>
+                                <span class="text-muted">info@sdsinema.com</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-warning bg-gradient rounded-circle p-2 me-3">
+                                <i class="fas fa-globe text-white"></i>
+                            </div>
+                            <div>
+                                <strong>Web:</strong><br>
+                                <span class="text-muted">www.sdsinema.com</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow h-100">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="bg-success bg-gradient rounded-circle p-3 me-3">
+                        <i class="fas fa-clock fa-2x text-white"></i>
+                    </div>
+                    <h3 class="card-title mb-0 fw-bold">Çalışma Saatleri</h3>
+                </div>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary bg-gradient rounded-circle p-2 me-3">
+                                <i class="fas fa-calendar-week text-white"></i>
+                            </div>
+                            <div>
+                                <strong>Pazartesi - Cuma:</strong><br>
+                                <span class="text-muted">09:00 - 23:00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary bg-gradient rounded-circle p-2 me-3">
+                                <i class="fas fa-calendar-week text-white"></i>
+                            </div>
+                            <div>
+                                <strong>Cumartesi - Pazar:</strong><br>
+                                <span class="text-muted">10:00 - 00:00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Not:</strong> Bayram günlerinde özel çalışma saatleri uygulanabilir.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (salons.Any())
+{
+    <!-- Salonlarımız -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-0 shadow">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="bg-warning bg-gradient rounded-circle p-3 me-3">
+                            <i class="fas fa-building fa-2x text-white"></i>
+                        </div>
+                        <h3 class="card-title mb-0 fw-bold">Salonlarımız</h3>
+                    </div>
+                    <div class="row g-4">
+                        @foreach (var salon in salons)
+                        {
+                            <div class="col-lg-4 col-md-6">
+                                <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-body p-4 text-center">
+                                        <div class="bg-primary bg-gradient rounded-circle p-3 mx-auto mb-3" style="width: fit-content;">
+                                            <i class="fas fa-building fa-2x text-white"></i>
+                                        </div>
+                                        <h5 class="card-title fw-bold mb-3">@salon.Name</h5>
+                                        <div class="row text-muted small mb-3">
+                                            <div class="col-6">
+                                                <i class="fas fa-users me-1"></i>@salon.Capacity kişi
+                                            </div>
+                                            <div class="col-6">
+                                                <i class="fas fa-circle me-1 @(salon.IsActive ? "text-success" : "text-danger")"></i>
+                                                @(salon.IsActive ? "Aktif" : "Pasif")
+                                            </div>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(salon.Description))
+                                        {
+                                            <p class="card-text text-muted small">@salon.Description</p>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Konum -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card border-0 shadow">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="bg-danger bg-gradient rounded-circle p-3 me-3">
+                        <i class="fas fa-map-marked-alt fa-2x text-white"></i>
+                    </div>
+                    <h3 class="card-title mb-0 fw-bold">Konum</h3>
+                </div>
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <div class="bg-light rounded p-4">
+                            <h5 class="fw-bold mb-3">SD Sinema Merkez</h5>
+                            <p class="text-muted mb-3">
+                                İstanbul'un merkezi konumunda, ulaşımı kolay bir yerde bulunmaktayız. 
+                                Metro ve otobüs hatlarına yakın konumumuz ile müşterilerimizin kolayca ulaşabilmesini sağlıyoruz.
+                            </p>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary bg-gradient rounded-circle p-2 me-3">
+                                            <i class="fas fa-subway text-white"></i>
+                                        </div>
+                                        <div>
+                                            <strong>Metro:</strong><br>
+                                            <span class="text-muted">M2 Şişli-Mecidiyeköy hattı</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-success bg-gradient rounded-circle p-2 me-3">
+                                            <i class="fas fa-bus text-white"></i>
+                                        </div>
+                                        <div>
+                                            <strong>Otobüs:</strong><br>
+                                            <span class="text-muted">54, 74, 129 numaralı hatlar</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="bg-gradient-secondary text-white p-4 rounded text-center h-100 d-flex flex-column justify-content-center">
+                            <i class="fas fa-map fa-4x mb-3 opacity-75"></i>
+                            <h5 class="fw-bold">Harita</h5>
+                            <p class="mb-0">Harita burada görüntülenecek</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sosyal Medya -->
 <div class="row">
-    <div class="col-md-6">
-        <h3>İletişim Bilgileri</h3>
-        <p><strong>Adres:</strong> Örnek Mahallesi, Örnek Sokak No:1, İstanbul</p>
-        <p><strong>Telefon:</strong> +90 212 123 45 67</p>
-        <p><strong>E-posta:</strong> info@sdsinema.com</p>
+    <div class="col-12">
+        <div class="card border-0 shadow">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="bg-info bg-gradient rounded-circle p-3 me-3">
+                        <i class="fas fa-comments fa-2x text-white"></i>
+                    </div>
+                    <h3 class="card-title mb-0 fw-bold">Sosyal Medya</h3>
+                </div>
+                <div class="row g-4 text-center">
+                    <div class="col-lg-3 col-md-6">
+                        <a href="#" class="text-decoration-none">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body p-4">
+                                    <i class="fab fa-facebook fa-3x text-primary mb-3"></i>
+                                    <h5 class="fw-bold">Facebook</h5>
+                                    <p class="text-muted small mb-0">Bizi takip edin</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <a href="#" class="text-decoration-none">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body p-4">
+                                    <i class="fab fa-twitter fa-3x text-info mb-3"></i>
+                                    <h5 class="fw-bold">Twitter</h5>
+                                    <p class="text-muted small mb-0">Güncel haberler</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <a href="#" class="text-decoration-none">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body p-4">
+                                    <i class="fab fa-instagram fa-3x text-danger mb-3"></i>
+                                    <h5 class="fw-bold">Instagram</h5>
+                                    <p class="text-muted small mb-0">Fotoğraflarımız</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <a href="#" class="text-decoration-none">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body p-4">
+                                    <i class="fab fa-youtube fa-3x text-danger mb-3"></i>
+                                    <h5 class="fw-bold">YouTube</h5>
+                                    <p class="text-muted small mb-0">Videolarımız</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="col-md-6">
-        <h3>Çalışma Saatleri</h3>
-        <p><strong>Pazartesi - Cuma:</strong> 09:00 - 23:00</p>
-        <p><strong>Cumartesi - Pazar:</strong> 10:00 - 00:00</p>
-    </div>
-</div> 
+</div>
+
+<style>
+    .bg-gradient-secondary {
+        background: linear-gradient(135deg, #6c757d, #495057);
+    }
+    
+    .opacity-75 {
+        opacity: 0.75;
+    }
+</style> 

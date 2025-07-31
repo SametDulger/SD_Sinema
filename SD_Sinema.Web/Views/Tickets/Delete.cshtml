@@ -4,42 +4,100 @@
     ViewData["Title"] = "Bilet Sil";
 }
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card">
-                <div class="card-header">
-                    <h3>Bilet Sil</h3>
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+        <div class="card border-0 shadow">
+            <div class="card-header bg-danger text-white py-3">
+                <h3 class="mb-0">
+                    <i class="fas fa-trash me-2"></i>Bilet Sil
+                </h3>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-danger border-0">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                        <div>
+                            <h4 class="alert-heading mb-2">Bu bileti silmek istediğinizden emin misiniz?</h4>
+                            <p class="mb-0">Bu işlem geri alınamaz ve bilet ile ilgili tüm veriler silinecektir.</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="alert alert-danger">
-                        <h4>Bu bileti silmek istediğinizden emin misiniz?</h4>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary bg-gradient rounded-circle p-2 me-3">
+                                <i class="fas fa-calendar-check text-white"></i>
+                            </div>
+                            <div>
+                                <strong>Rezervasyon:</strong><br>
+                                <span class="text-muted">@Model.ReservationInfo</span>
+                            </div>
+                        </div>
                     </div>
                     
-                    <dl class="row">
-                        <dt class="col-sm-3">Rezervasyon:</dt>
-                        <dd class="col-sm-9">@Model.ReservationInfo</dd>
-
-                        <dt class="col-sm-3">Bilet Türü:</dt>
-                        <dd class="col-sm-9">@Model.TicketTypeName</dd>
-
-                        <dt class="col-sm-3">Koltuk:</dt>
-                        <dd class="col-sm-9">@Model.SeatInfo</dd>
-
-                        <dt class="col-sm-3">Fiyat:</dt>
-                        <dd class="col-sm-9">@Model.Price.ToString("C")</dd>
-
-                        <dt class="col-sm-3">Durum:</dt>
-                        <dd class="col-sm-9">@Model.Status</dd>
-                    </dl>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-success bg-gradient rounded-circle p-2 me-3">
+                                <i class="fas fa-ticket-alt text-white"></i>
+                            </div>
+                            <div>
+                                <strong>Bilet Türü:</strong><br>
+                                <span class="text-muted">@Model.TicketTypeName</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-warning bg-gradient rounded-circle p-2 me-3">
+                                <i class="fas fa-chair text-white"></i>
+                            </div>
+                            <div>
+                                <strong>Koltuk:</strong><br>
+                                <span class="text-muted">@Model.SeatInfo</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-danger bg-gradient rounded-circle p-2 me-3">
+                                <i class="fas fa-money-bill text-white"></i>
+                            </div>
+                            <div>
+                                <strong>Fiyat:</strong><br>
+                                <span class="text-muted">@Model.Price.ToString("C")</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-info bg-gradient rounded-circle p-2 me-3">
+                                <i class="fas fa-circle text-white"></i>
+                            </div>
+                            <div>
+                                <strong>Durum:</strong><br>
+                                <span class="@(Model.Status == "Aktif" ? "text-success" : Model.Status == "Kullanıldı" ? "text-warning" : "text-danger") fw-bold">
+                                    @Model.Status
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-footer">
-                    <form asp-action="Delete" method="post">
-                        <input type="hidden" asp-for="Id" />
-                        <button type="submit" class="btn btn-danger">Sil</button>
-                        <a asp-action="Index" class="btn btn-secondary">İptal</a>
-                    </form>
-                </div>
+                
+                <form asp-action="Delete" method="post" class="mt-4 pt-3 border-top">
+                    <input type="hidden" asp-for="Id" />
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>İptal
+                        </a>
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            <i class="fas fa-trash me-2"></i>Bileti Sil
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
