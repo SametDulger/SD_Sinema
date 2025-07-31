@@ -14,7 +14,12 @@ namespace SD_Sinema.Core.Entities
         [Required]
         public int SeatNumber { get; set; }
         
+        public int? SeatTypeId { get; set; }
+        public virtual SeatType? SeatType { get; set; }
+        
         public bool IsActive { get; set; } = true;
+        
+        public bool IsAvailable { get; set; } = true;
         
         public virtual Salon Salon { get; set; } = null!;
         public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();

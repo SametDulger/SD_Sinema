@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using SD_Sinema.Business.DTOs;
 using SD_Sinema.Business.Services;
+using SD_Sinema.Core.Entities;
+using SD_Sinema.Core.Interfaces;
 
 namespace SD_Sinema.API.Controllers
 {
@@ -9,10 +11,12 @@ namespace SD_Sinema.API.Controllers
     public class MoviesController : ControllerBase
     {
         private readonly IMovieService _movieService;
+        private readonly IGenreService _genreService;
 
-        public MoviesController(IMovieService movieService)
+        public MoviesController(IMovieService movieService, IGenreService genreService)
         {
             _movieService = movieService;
+            _genreService = genreService;
         }
 
         [HttpGet]
@@ -27,6 +31,13 @@ namespace SD_Sinema.API.Controllers
         {
             var movies = await _movieService.GetActiveMoviesAsync();
             return Ok(movies);
+        }
+
+        [HttpGet("genres")]
+        public async Task<ActionResult<IEnumerable<string>>> GetGenres()
+        {
+            var genreNames = await _genreService.GetActiveGenreNamesAsync();
+            return Ok(genreNames);
         }
 
         [HttpGet("{id}")]
@@ -69,12 +80,12 @@ namespace SD_Sinema.API.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                return NotFound(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(int id, [FromQuery] string deletedBy, [FromQuery] string reason)
+        public async Task<ActionResult> Delete(int id, [FromQuery] string deletedBy = "System", [FromQuery] string reason = "Manual deletion")
         {
             try
             {
@@ -83,7 +94,7 @@ namespace SD_Sinema.API.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                return NotFound(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
     }

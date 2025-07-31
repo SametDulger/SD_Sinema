@@ -1,53 +1,46 @@
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using SD_Sinema.Web.Models;
 using SD_Sinema.Web.Models.DTOs;
-using System.Text;
+using SD_Sinema.Web.Services;
 
 namespace SD_Sinema.Web.Controllers
 {
     public class ReservationsController : Controller
     {
-        private readonly HttpClient _httpClient;
+        private readonly IApiService _apiService;
 
-        public ReservationsController(IHttpClientFactory httpClientFactory)
+        public ReservationsController(IApiService apiService)
         {
-            _httpClient = httpClientFactory.CreateClient("API");
+            _apiService = apiService;
         }
 
         public async Task<IActionResult> Index()
         {
             try
             {
-                var response = await _httpClient.GetAsync("api/reservations");
-                if (response.IsSuccessStatusCode)
+                var reservationDtos = await _apiService.GetAsync<List<ReservationDto>>("api/reservations");
+                
+                var reservationViewModels = reservationDtos?.Select(r => new ReservationViewModel
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var reservationDtos = JsonConvert.DeserializeObject<List<ReservationDto>>(content);
-                    
-                    var reservationViewModels = reservationDtos?.Select(r => new ReservationViewModel
-                    {
-                        Id = r.Id,
-                        UserId = r.UserId,
-                        SessionId = r.SessionId,
-                        ReservationDate = r.ReservationDate,
-                        SeatCount = 1, // API'den gelmiyor, varsayılan değer
-                        TotalPrice = r.Price ?? 0,
-                        Status = r.Status,
-                        CreatedAt = r.CreatedDate,
-                        UserName = r.UserName,
-                        SessionInfo = $"{r.MovieTitle} - {r.SalonName}"
-                    }).ToList() ?? new List<ReservationViewModel>();
-                    
-                    return View(reservationViewModels);
-                }
+                    Id = r.Id,
+                    UserId = r.UserId,
+                    SessionId = r.SessionId,
+                    SeatId = r.SeatId,
+                    ReservationDate = r.ReservationDate,
+                    SeatCount = r.SeatCount,
+                    TotalPrice = r.TotalPrice,
+                    Status = r.Status,
+                    CreatedAt = r.CreatedDate,
+                    UserName = r.UserName,
+                    SessionInfo = r.SessionInfo
+                }).ToList() ?? new List<ReservationViewModel>();
+                
+                return View(reservationViewModels);
             }
             catch
             {
-                // API bağlantı hatası
+                return View(new List<ReservationViewModel>());
             }
-
-            return View(Enumerable.Empty<ReservationViewModel>());
         }
 
         public async Task<IActionResult> Create()
@@ -55,43 +48,28 @@ namespace SD_Sinema.Web.Controllers
             try
             {
                 // Kullanıcı listesini yükle
-                var usersResponse = await _httpClient.GetAsync("api/users");
-                if (usersResponse.IsSuccessStatusCode)
+                var userDtos = await _apiService.GetAsync<List<UserDto>>("api/users");
+                ViewBag.Users = userDtos?.Select(u => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
                 {
-                    var usersContent = await usersResponse.Content.ReadAsStringAsync();
-                    var userDtos = JsonConvert.DeserializeObject<List<UserDto>>(usersContent);
-                    ViewBag.Users = userDtos?.Select(u => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                    {
-                        Value = u.Id.ToString(),
-                        Text = $"{u.FirstName} {u.LastName}"
-                    }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
+                    Value = u.Id.ToString(),
+                    Text = $"{u.FirstName} {u.LastName}"
+                }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
 
                 // Seans listesini yükle
-                var sessionsResponse = await _httpClient.GetAsync("api/sessions");
-                if (sessionsResponse.IsSuccessStatusCode)
+                var sessionDtos = await _apiService.GetAsync<List<SessionDto>>("api/sessions");
+                ViewBag.Sessions = sessionDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
                 {
-                    var sessionsContent = await sessionsResponse.Content.ReadAsStringAsync();
-                    var sessionDtos = JsonConvert.DeserializeObject<List<SessionDto>>(sessionsContent);
-                    ViewBag.Sessions = sessionDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                    {
-                        Value = s.Id.ToString(),
-                        Text = $"{s.MovieTitle} - {s.SalonName}"
-                    }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
+                    Value = s.Id.ToString(),
+                    Text = $"{s.MovieTitle} - {s.SalonName} - {s.SessionDate:dd/MM/yyyy HH:mm}"
+                }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
 
                 // Koltuk listesini yükle
-                var seatsResponse = await _httpClient.GetAsync("api/seats");
-                if (seatsResponse.IsSuccessStatusCode)
+                var seatDtos = await _apiService.GetAsync<List<SeatDto>>("api/seats");
+                ViewBag.Seats = seatDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
                 {
-                    var seatsContent = await seatsResponse.Content.ReadAsStringAsync();
-                    var seatDtos = JsonConvert.DeserializeObject<List<SeatDto>>(seatsContent);
-                    ViewBag.Seats = seatDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                    {
-                        Value = s.Id.ToString(),
-                        Text = $"{s.SalonName} - {s.RowNumber}{s.SeatNumber}"
-                    }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
+                    Value = s.Id.ToString(),
+                    Text = $"{s.SalonName} - {s.RowNumber}{s.SeatNumber}"
+                }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
             }
             catch
             {
@@ -115,90 +93,68 @@ namespace SD_Sinema.Web.Controllers
                         UserId = reservationViewModel.UserId,
                         SessionId = reservationViewModel.SessionId,
                         SeatId = reservationViewModel.SeatId,
-                        TicketTypeId = 1, // Varsayılan değer
                         ReservationDate = reservationViewModel.ReservationDate,
-                        Status = "Pending",
-                        Price = reservationViewModel.TotalPrice
+                        SeatCount = reservationViewModel.SeatCount,
+                        TotalPrice = reservationViewModel.TotalPrice,
+                        Status = reservationViewModel.Status
                     };
 
-                    var json = JsonConvert.SerializeObject(createReservationDto);
-                    var content = new StringContent(json, Encoding.UTF8, "application/json");
-                    var response = await _httpClient.PostAsync("api/reservations", content);
-
-                    if (response.IsSuccessStatusCode)
+                    var result = await _apiService.PostAsync<ReservationDto>("api/reservations", createReservationDto);
+                    if (result != null)
                     {
                         return RedirectToAction(nameof(Index));
                     }
                     else
                     {
-                        var errorContent = await response.Content.ReadAsStringAsync();
-                        ModelState.AddModelError("", $"API Hatası: {response.StatusCode} - {errorContent}");
+                        ModelState.AddModelError("", "Rezervasyon oluşturulurken hata oluştu.");
                     }
                 }
-                catch (Exception ex)
+                catch
                 {
-                    ModelState.AddModelError("", $"Rezervasyon oluşturulurken hata oluştu: {ex.Message}");
+                    ModelState.AddModelError("", "Rezervasyon oluşturulurken hata oluştu.");
                 }
             }
 
-            // Hata durumunda dropdown listelerini tekrar yükle ve seçilen değerleri koru
+            // Hata durumunda dropdown'ları tekrar doldur
             try
             {
-                var usersResponse = await _httpClient.GetAsync("api/users");
-                if (usersResponse.IsSuccessStatusCode)
+                var userDtos = await _apiService.GetAsync<List<UserDto>>("api/users");
+                ViewBag.Users = userDtos?.Select(u => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
                 {
-                    var usersContent = await usersResponse.Content.ReadAsStringAsync();
-                    var userDtos = JsonConvert.DeserializeObject<List<UserDto>>(usersContent);
-                    ViewBag.Users = userDtos?.Select(u => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                    {
-                        Value = u.Id.ToString(),
-                        Text = $"{u.FirstName} {u.LastName}",
-                        Selected = u.Id == reservationViewModel.UserId
-                    }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
-                else
-                {
-                    ViewBag.Users = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
-
-                var sessionsResponse = await _httpClient.GetAsync("api/sessions");
-                if (sessionsResponse.IsSuccessStatusCode)
-                {
-                    var sessionsContent = await sessionsResponse.Content.ReadAsStringAsync();
-                    var sessionDtos = JsonConvert.DeserializeObject<List<SessionDto>>(sessionsContent);
-                    ViewBag.Sessions = sessionDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                    {
-                        Value = s.Id.ToString(),
-                        Text = $"{s.MovieTitle} - {s.SalonName}",
-                        Selected = s.Id == reservationViewModel.SessionId
-                    }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
-                else
-                {
-                    ViewBag.Sessions = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
-
-                var seatsResponse = await _httpClient.GetAsync("api/seats");
-                if (seatsResponse.IsSuccessStatusCode)
-                {
-                    var seatsContent = await seatsResponse.Content.ReadAsStringAsync();
-                    var seatDtos = JsonConvert.DeserializeObject<List<SeatDto>>(seatsContent);
-                    ViewBag.Seats = seatDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                    {
-                        Value = s.Id.ToString(),
-                        Text = $"{s.SalonName} - {s.RowNumber}{s.SeatNumber}",
-                        Selected = s.Id == reservationViewModel.SeatId
-                    }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
-                else
-                {
-                    ViewBag.Seats = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
+                    Value = u.Id.ToString(),
+                    Text = $"{u.FirstName} {u.LastName}"
+                }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
             }
             catch
             {
                 ViewBag.Users = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+            }
+
+            try
+            {
+                var sessionDtos = await _apiService.GetAsync<List<SessionDto>>("api/sessions");
+                ViewBag.Sessions = sessionDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                {
+                    Value = s.Id.ToString(),
+                    Text = $"{s.MovieTitle} - {s.SalonName} - {s.SessionDate:dd/MM/yyyy HH:mm}"
+                }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+            }
+            catch
+            {
                 ViewBag.Sessions = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+            }
+
+            try
+            {
+                var seatDtos = await _apiService.GetAsync<List<SeatDto>>("api/seats");
+                ViewBag.Seats = seatDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                {
+                    Value = s.Id.ToString(),
+                    Text = $"{s.SalonName} - {s.RowNumber}{s.SeatNumber}"
+                }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+            }
+            catch
+            {
                 ViewBag.Seats = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
             }
 
@@ -209,64 +165,60 @@ namespace SD_Sinema.Web.Controllers
         {
             try
             {
-                var response = await _httpClient.GetAsync($"api/reservations/{id}");
-                if (response.IsSuccessStatusCode)
+                var reservationDto = await _apiService.GetAsync<ReservationDto>($"api/reservations/{id}");
+                
+                if (reservationDto == null)
+                    return NotFound();
+                
+                var reservationViewModel = new ReservationViewModel
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var reservationDto = JsonConvert.DeserializeObject<ReservationDto>(content);
-                    
-                    if (reservationDto == null)
-                        return NotFound();
-                    
-                    var reservationViewModel = new ReservationViewModel
-                    {
-                        Id = reservationDto.Id,
-                        UserId = reservationDto.UserId,
-                        SessionId = reservationDto.SessionId,
-                        ReservationDate = reservationDto.ReservationDate,
-                        SeatCount = 1,
-                        TotalPrice = reservationDto.Price ?? 0,
-                        Status = reservationDto.Status,
-                        CreatedAt = reservationDto.CreatedDate,
-                        UserName = reservationDto.UserName ?? string.Empty,
-                        SessionInfo = $"{(reservationDto.MovieTitle ?? string.Empty)} - {(reservationDto.SalonName ?? string.Empty)}"
-                    };
+                    Id = reservationDto.Id,
+                    UserId = reservationDto.UserId,
+                    SessionId = reservationDto.SessionId,
+                    SeatId = reservationDto.SeatId,
+                    ReservationDate = reservationDto.ReservationDate,
+                    SeatCount = reservationDto.SeatCount,
+                    TotalPrice = reservationDto.TotalPrice,
+                    Status = reservationDto.Status,
+                    UserName = reservationDto.UserName,
+                    SessionInfo = reservationDto.SessionInfo
+                };
 
-                    // Kullanıcı listesini yükle
-                    var usersResponse = await _httpClient.GetAsync("api/users");
-                    if (usersResponse.IsSuccessStatusCode)
+                // Dropdown'ları doldur
+                try
+                {
+                    var userDtos = await _apiService.GetAsync<List<UserDto>>("api/users");
+                    ViewBag.Users = userDtos?.Select(u => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
                     {
-                        var usersContent = await usersResponse.Content.ReadAsStringAsync();
-                        var userDtos = JsonConvert.DeserializeObject<List<UserDto>>(usersContent);
-                        ViewBag.Users = userDtos?.Select(u => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                        {
-                            Value = u.Id.ToString(),
-                            Text = $"{u.FirstName} {u.LastName}"
-                        }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                    }
-
-                    // Seans listesini yükle
-                    var sessionsResponse = await _httpClient.GetAsync("api/sessions");
-                    if (sessionsResponse.IsSuccessStatusCode)
-                    {
-                        var sessionsContent = await sessionsResponse.Content.ReadAsStringAsync();
-                        var sessionDtos = JsonConvert.DeserializeObject<List<SessionDto>>(sessionsContent);
-                        ViewBag.Sessions = sessionDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                        {
-                            Value = s.Id.ToString(),
-                            Text = $"{s.MovieTitle} - {s.SalonName}"
-                        }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                    }
-                    
-                    return View(reservationViewModel);
+                        Value = u.Id.ToString(),
+                        Text = $"{u.FirstName} {u.LastName}"
+                    }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
                 }
+                catch
+                {
+                    ViewBag.Users = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+                }
+
+                try
+                {
+                    var sessionDtos = await _apiService.GetAsync<List<SessionDto>>("api/sessions");
+                    ViewBag.Sessions = sessionDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                    {
+                        Value = s.Id.ToString(),
+                        Text = $"{s.MovieTitle} - {s.SalonName} - {s.SessionDate:dd/MM/yyyy HH:mm}"
+                    }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+                }
+                catch
+                {
+                    ViewBag.Sessions = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+                }
+
+                return View(reservationViewModel);
             }
             catch
             {
-                // API bağlantı hatası
+                return NotFound();
             }
-
-            return NotFound();
         }
 
         [HttpPost]
@@ -278,22 +230,23 @@ namespace SD_Sinema.Web.Controllers
                 {
                     var updateReservationDto = new UpdateReservationDto
                     {
-                        Id = id,
                         UserId = reservationViewModel.UserId,
                         SessionId = reservationViewModel.SessionId,
-                        SeatId = 1,
-                        TicketTypeId = 1,
+                        SeatId = reservationViewModel.SeatId,
                         ReservationDate = reservationViewModel.ReservationDate,
+                        SeatCount = reservationViewModel.SeatCount,
+                        TotalPrice = reservationViewModel.TotalPrice,
                         Status = reservationViewModel.Status
                     };
 
-                    var json = JsonConvert.SerializeObject(updateReservationDto);
-                    var content = new StringContent(json, Encoding.UTF8, "application/json");
-                    var response = await _httpClient.PutAsync($"api/reservations/{id}", content);
-
-                    if (response.IsSuccessStatusCode)
+                    var result = await _apiService.PutAsync<ReservationDto>($"api/reservations/{id}", updateReservationDto);
+                    if (result != null)
                     {
                         return RedirectToAction(nameof(Index));
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("", "Rezervasyon güncellenirken hata oluştu.");
                     }
                 }
                 catch
@@ -302,36 +255,32 @@ namespace SD_Sinema.Web.Controllers
                 }
             }
 
-            // Hata durumunda dropdown listelerini tekrar yükle
+            // Hata durumunda dropdown'ları tekrar doldur
             try
             {
-                var usersResponse = await _httpClient.GetAsync("api/users");
-                if (usersResponse.IsSuccessStatusCode)
+                var userDtos = await _apiService.GetAsync<List<UserDto>>("api/users");
+                ViewBag.Users = userDtos?.Select(u => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
                 {
-                    var usersContent = await usersResponse.Content.ReadAsStringAsync();
-                    var userDtos = JsonConvert.DeserializeObject<List<UserDto>>(usersContent);
-                    ViewBag.Users = userDtos?.Select(u => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                    {
-                        Value = u.Id.ToString(),
-                        Text = $"{u.FirstName} {u.LastName}"
-                    }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
-
-                var sessionsResponse = await _httpClient.GetAsync("api/sessions");
-                if (sessionsResponse.IsSuccessStatusCode)
-                {
-                    var sessionsContent = await sessionsResponse.Content.ReadAsStringAsync();
-                    var sessionDtos = JsonConvert.DeserializeObject<List<SessionDto>>(sessionsContent);
-                    ViewBag.Sessions = sessionDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                    {
-                        Value = s.Id.ToString(),
-                        Text = $"{s.MovieTitle} - {s.SalonName}"
-                    }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
-                }
+                    Value = u.Id.ToString(),
+                    Text = $"{u.FirstName} {u.LastName}"
+                }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
             }
             catch
             {
                 ViewBag.Users = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+            }
+
+            try
+            {
+                var sessionDtos = await _apiService.GetAsync<List<SessionDto>>("api/sessions");
+                ViewBag.Sessions = sessionDtos?.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                {
+                    Value = s.Id.ToString(),
+                    Text = $"{s.MovieTitle} - {s.SalonName} - {s.SessionDate:dd/MM/yyyy HH:mm}"
+                }).ToList() ?? new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+            }
+            catch
+            {
                 ViewBag.Sessions = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
             }
 
@@ -342,15 +291,19 @@ namespace SD_Sinema.Web.Controllers
         {
             try
             {
-                var response = await _httpClient.DeleteAsync($"api/reservations/{id}?deletedBy=Admin&reason=Silme");
-                if (response.IsSuccessStatusCode)
+                var success = await _apiService.DeleteAsync($"api/reservations/{id}?deletedBy=Admin&reason=Silme");
+                if (success)
                 {
                     return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Rezervasyon silinirken hata oluştu.");
                 }
             }
             catch
             {
-                // API bağlantı hatası
+                ModelState.AddModelError("", "Rezervasyon silinirken hata oluştu.");
             }
 
             return RedirectToAction(nameof(Index));
@@ -360,53 +313,51 @@ namespace SD_Sinema.Web.Controllers
         {
             try
             {
-                var response = await _httpClient.GetAsync($"api/reservations/{id}");
-                if (response.IsSuccessStatusCode)
+                var reservationDto = await _apiService.GetAsync<ReservationDto>($"api/reservations/{id}");
+                
+                if (reservationDto == null)
+                    return NotFound();
+                
+                var reservationViewModel = new ReservationViewModel
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var reservationDto = JsonConvert.DeserializeObject<ReservationDto>(content);
-                    
-                    if (reservationDto == null)
-                        return NotFound();
-                    
-                    var reservationViewModel = new ReservationViewModel
-                    {
-                        Id = reservationDto.Id,
-                        UserId = reservationDto.UserId,
-                        SessionId = reservationDto.SessionId,
-                        ReservationDate = reservationDto.ReservationDate,
-                        SeatCount = 1, // API'den gelmiyor, varsayılan değer
-                        TotalPrice = reservationDto.Price ?? 0,
-                        Status = reservationDto.Status,
-                        CreatedAt = reservationDto.CreatedDate,
-                        UserName = reservationDto.UserName ?? string.Empty,
-                        SessionInfo = $"{(reservationDto.MovieTitle ?? string.Empty)} - {(reservationDto.SalonName ?? string.Empty)}"
-                    };
-                    
-                    return View(reservationViewModel);
-                }
+                    Id = reservationDto.Id,
+                    UserId = reservationDto.UserId,
+                    SessionId = reservationDto.SessionId,
+                    SeatId = reservationDto.SeatId,
+                    ReservationDate = reservationDto.ReservationDate,
+                    SeatCount = reservationDto.SeatCount,
+                    TotalPrice = reservationDto.TotalPrice,
+                    Status = reservationDto.Status,
+                    CreatedAt = reservationDto.CreatedDate,
+                    UserName = reservationDto.UserName,
+                    SessionInfo = reservationDto.SessionInfo
+                };
+
+                return View(reservationViewModel);
             }
             catch
             {
-                // API bağlantı hatası
+                return NotFound();
             }
-
-            return NotFound();
         }
 
         public async Task<IActionResult> Approve(int id)
         {
             try
             {
-                var response = await _httpClient.PostAsync($"api/reservations/{id}/approve", null);
-                if (response.IsSuccessStatusCode)
+                var result = await _apiService.PostAsync<ReservationDto>($"api/reservations/{id}/approve", new { });
+                if (result != null)
                 {
                     return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Rezervasyon onaylanırken hata oluştu.");
                 }
             }
             catch
             {
-                // API bağlantı hatası
+                ModelState.AddModelError("", "Rezervasyon onaylanırken hata oluştu.");
             }
 
             return RedirectToAction(nameof(Index));
@@ -416,15 +367,19 @@ namespace SD_Sinema.Web.Controllers
         {
             try
             {
-                var response = await _httpClient.PostAsync($"api/reservations/{id}/cancel", null);
-                if (response.IsSuccessStatusCode)
+                var result = await _apiService.PostAsync<ReservationDto>($"api/reservations/{id}/cancel", new { });
+                if (result != null)
                 {
                     return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Rezervasyon iptal edilirken hata oluştu.");
                 }
             }
             catch
             {
-                // API bağlantı hatası
+                ModelState.AddModelError("", "Rezervasyon iptal edilirken hata oluştu.");
             }
 
             return RedirectToAction(nameof(Index));

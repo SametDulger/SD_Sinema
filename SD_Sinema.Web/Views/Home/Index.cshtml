@@ -1,43 +1,247 @@
-@model List<SD_Sinema.Web.Models.MovieViewModel>
+@model SD_Sinema.Web.Models.HomeViewModel
 
 @{
     ViewData["Title"] = "Ana Sayfa";
 }
 
-<div class="text-center">
-    <h1 class="display-4">SD Sinema'ya Hoş Geldiniz</h1>
-    <p>En yeni filmleri keşfedin ve biletinizi hemen alın!</p>
+<!-- Hero Section -->
+<div class="text-center mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h1 class="display-3 fw-bold text-primary mb-3">
+                <i class="fas fa-film me-3"></i>SD Sinema'ya Hoş Geldiniz
+            </h1>
+            <p class="lead fs-4 text-muted mb-4">En yeni filmleri keşfedin ve biletinizi hemen alın!</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="@Url.Action("Index", "Movies")" class="btn btn-primary btn-lg">
+                    <i class="fas fa-film me-2"></i>Filmleri Keşfet
+                </a>
+                <a href="@Url.Action("Index", "Sessions")" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-calendar-alt me-2"></i>Seansları Gör
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div class="row">
-    <div class="col-md-12">
-        <h2>Vizyondaki Filmler</h2>
-        <div class="row">
-            @if (Model != null && Model.Any())
-            {
-                @foreach (var movie in Model)
+<!-- İstatistikler -->
+<div class="row mb-5 g-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="card text-center border-0 bg-gradient-primary text-white h-100">
+            <div class="card-body py-4">
+                <div class="mb-3">
+                    <i class="fas fa-film fa-3x opacity-75"></i>
+                </div>
+                <h2 class="display-6 fw-bold mb-2">@Model.Statistics.TotalMovies</h2>
+                <p class="card-text fs-5 mb-0">Toplam Film</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card text-center border-0 bg-gradient-success text-white h-100">
+            <div class="card-body py-4">
+                <div class="mb-3">
+                    <i class="fas fa-building fa-3x opacity-75"></i>
+                </div>
+                <h2 class="display-6 fw-bold mb-2">@Model.Statistics.TotalSalons</h2>
+                <p class="card-text fs-5 mb-0">Toplam Salon</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card text-center border-0 bg-gradient-info text-white h-100">
+            <div class="card-body py-4">
+                <div class="mb-3">
+                    <i class="fas fa-users fa-3x opacity-75"></i>
+                </div>
+                <h2 class="display-6 fw-bold mb-2">@Model.Statistics.TotalUsers</h2>
+                <p class="card-text fs-5 mb-0">Toplam Kullanıcı</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card text-center border-0 bg-gradient-warning text-white h-100">
+            <div class="card-body py-4">
+                <div class="mb-3">
+                    <i class="fas fa-calendar-alt fa-3x opacity-75"></i>
+                </div>
+                <h2 class="display-6 fw-bold mb-2">@Model.Statistics.TotalSessions</h2>
+                <p class="card-text fs-5 mb-0">Toplam Seans</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vizyondaki Filmler -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h3 fw-bold text-primary mb-0">
+                <i class="fas fa-film me-2"></i>Vizyondaki Filmler
+            </h2>
+            <a href="@Url.Action("Index", "Movies")" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-right me-2"></i>Tümünü Gör
+            </a>
+        </div>
+        
+        @if (Model.ActiveMovies != null && Model.ActiveMovies.Any())
+        {
+            <div class="row g-4">
+                @foreach (var movie in Model.ActiveMovies.Take(6))
                 {
-                    <div class="col-md-4 mb-4">
-                        <div class="card">
-                            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 300px;">
-                                <span class="text-white">Poster Yok</span>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="position-relative">
+                                <div class="card-img-top bg-gradient-secondary d-flex align-items-center justify-content-center" style="height: 250px;">
+                                    <i class="fas fa-film fa-4x text-white opacity-50"></i>
+                                </div>
+                                <div class="position-absolute top-0 end-0 m-3">
+                                    <span class="badge bg-primary fs-6">@movie.GenreName</span>
+                                </div>
                             </div>
-                            <div class="card-body">
-                                <h5 class="card-title">@movie.Title</h5>
-                                <p class="card-text">@(movie.Description.Length > 100 ? movie.Description.Substring(0, 100) + "..." : movie.Description)</p>
-                                <p class="card-text"><small class="text-muted">Süre: @movie.Duration dakika | Tür: @movie.Genre</small></p>
-                                <a href="@Url.Action("Details", "Movies", new { id = movie.Id })" class="btn btn-primary">Detaylar</a>
+                            <div class="card-body d-flex flex-column p-4">
+                                <h5 class="card-title fw-bold mb-3">@movie.Title</h5>
+                                <p class="card-text text-muted flex-grow-1">
+                                    @(movie.Description.Length > 120 ? movie.Description.Substring(0, 120) + "..." : movie.Description)
+                                </p>
+                                <div class="mt-auto">
+                                    <div class="row text-muted small mb-3">
+                                        <div class="col-6">
+                                            <i class="fas fa-clock me-1"></i>@movie.Duration dk
+                                        </div>
+                                        <div class="col-6 text-end">
+                                            <i class="fas fa-star text-warning me-1"></i>@movie.GenreName
+                                        </div>
+                                    </div>
+                                    <div class="d-grid">
+                                        <a href="@Url.Action("Details", "Movies", new { id = movie.Id })" class="btn btn-primary">
+                                            <i class="fas fa-info-circle me-2"></i>Detayları Gör
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 }
-            }
-            else
-            {
-                <div class="col-12">
-                    <p class="text-center">Henüz vizyonda film bulunmuyor.</p>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <div class="card border-0 bg-light">
+                    <div class="card-body py-5">
+                        <i class="fas fa-film fa-4x text-muted mb-3"></i>
+                        <h5 class="text-muted">Henüz vizyonda film bulunmuyor</h5>
+                        <p class="text-muted">Yakında yeni filmler eklenecek!</p>
+                    </div>
                 </div>
-            }
-        </div>
+            </div>
+        }
     </div>
-</div> 
+</div>
+
+<!-- Yaklaşan Seanslar -->
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h3 fw-bold text-primary mb-0">
+                <i class="fas fa-calendar-alt me-2"></i>Yaklaşan Seanslar
+            </h2>
+            <a href="@Url.Action("Index", "Sessions")" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-right me-2"></i>Tümünü Gör
+            </a>
+        </div>
+        
+        @if (Model.UpcomingSessions != null && Model.UpcomingSessions.Any())
+        {
+            <div class="row g-4">
+                @foreach (var session in Model.UpcomingSessions)
+                {
+                    <div class="col-lg-6 col-md-12">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h6 class="card-title fw-bold mb-0">@session.MovieTitle</h6>
+                                    <span class="badge bg-success fs-6">@session.Price.ToString("C")</span>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <div class="d-flex align-items-center text-muted">
+                                            <i class="fas fa-building me-2 text-primary"></i>
+                                            <span>@session.SalonName</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="d-flex align-items-center text-muted">
+                                            <i class="fas fa-calendar me-2 text-primary"></i>
+                                            <span>@session.SessionDate.ToString("dd.MM.yyyy")</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="d-flex align-items-center text-muted">
+                                            <i class="fas fa-clock me-2 text-primary"></i>
+                                            <span>@session.StartTime.ToString("HH:mm") - @session.EndTime.ToString("HH:mm")</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="d-flex align-items-center text-muted">
+                                            <i class="fas fa-ticket-alt me-2 text-primary"></i>
+                                            <span>Bilet Mevcut</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-grid">
+                                    <a href="@Url.Action("Details", "Sessions", new { id = session.Id })" class="btn btn-success">
+                                        <i class="fas fa-ticket-alt me-2"></i>Bilet Al
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <div class="card border-0 bg-light">
+                    <div class="card-body py-5">
+                        <i class="fas fa-calendar-alt fa-4x text-muted mb-3"></i>
+                        <h5 class="text-muted">Yaklaşan seans bulunmuyor</h5>
+                        <p class="text-muted">Yakında yeni seanslar eklenecek!</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #0d6efd, #0056b3);
+    }
+    
+    .bg-gradient-success {
+        background: linear-gradient(135deg, #198754, #146c43);
+    }
+    
+    .bg-gradient-info {
+        background: linear-gradient(135deg, #0dcaf0, #0aa2c0);
+    }
+    
+    .bg-gradient-warning {
+        background: linear-gradient(135deg, #ffc107, #e0a800);
+    }
+    
+    .bg-gradient-secondary {
+        background: linear-gradient(135deg, #6c757d, #495057);
+    }
+    
+    .opacity-75 {
+        opacity: 0.75;
+    }
+    
+    .opacity-50 {
+        opacity: 0.5;
+    }
+</style> 

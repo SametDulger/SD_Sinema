@@ -25,14 +25,14 @@ namespace SD_Sinema.Data.UnitOfWork
             _context = context;
         }
 
-        public IRepository<User> Users => _users ??= new Repository<User>(_context);
-        public IRepository<Salon> Salons => _salons ??= new Repository<Salon>(_context);
-        public IRepository<Seat> Seats => _seats ??= new Repository<Seat>(_context);
+        public IRepository<User> Users => _users ??= new UserRepository(_context);
+        public IRepository<Salon> Salons => _salons ??= new SalonRepository(_context);
+        public IRepository<Seat> Seats => _seats ??= new SeatRepository(_context);
         public IMovieRepository Movies => _movies ??= new MovieRepository(_context);
         public ISessionRepository Sessions => _sessions ??= new SessionRepository(_context);
-        public IRepository<TicketType> TicketTypes => _ticketTypes ??= new Repository<TicketType>(_context);
+        public IRepository<TicketType> TicketTypes => _ticketTypes ??= new TicketTypeRepository(_context);
         public IReservationRepository Reservations => _reservations ??= new ReservationRepository(_context);
-        public IRepository<Ticket> Tickets => _tickets ??= new Repository<Ticket>(_context);
+        public IRepository<Ticket> Tickets => _tickets ??= new TicketRepository(_context);
 
         public async Task<int> SaveChangesAsync()
         {

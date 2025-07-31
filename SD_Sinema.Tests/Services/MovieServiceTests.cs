@@ -75,7 +75,7 @@ namespace SD_Sinema.Tests.Services
         public async Task GetByIdAsync_WithInvalidId_ShouldReturnNull()
         {
             // Arrange
-            _mockUnitOfWork.Setup(x => x.Movies.GetByIdWithSessionsAsync(999)).ReturnsAsync((Movie)null);
+            _mockUnitOfWork.Setup(x => x.Movies.GetByIdWithSessionsAsync(999)).ReturnsAsync((Movie?)null);
 
             // Act
             var result = await _movieService.GetByIdAsync(999);
@@ -89,7 +89,7 @@ namespace SD_Sinema.Tests.Services
         public async Task GetByIdAsync_WithZeroId_ShouldReturnNull()
         {
             // Arrange
-            _mockUnitOfWork.Setup(x => x.Movies.GetByIdWithSessionsAsync(0)).ReturnsAsync((Movie)null);
+            _mockUnitOfWork.Setup(x => x.Movies.GetByIdWithSessionsAsync(0)).ReturnsAsync((Movie?)null);
 
             // Act
             var result = await _movieService.GetByIdAsync(0);
@@ -103,7 +103,7 @@ namespace SD_Sinema.Tests.Services
         public async Task GetByIdAsync_WithNegativeId_ShouldReturnNull()
         {
             // Arrange
-            _mockUnitOfWork.Setup(x => x.Movies.GetByIdWithSessionsAsync(-1)).ReturnsAsync((Movie)null);
+            _mockUnitOfWork.Setup(x => x.Movies.GetByIdWithSessionsAsync(-1)).ReturnsAsync((Movie?)null);
 
             // Act
             var result = await _movieService.GetByIdAsync(-1);
@@ -235,7 +235,7 @@ namespace SD_Sinema.Tests.Services
                 Duration = 140 
             };
 
-            _mockUnitOfWork.Setup(x => x.Movies.GetByIdAsync(999)).ReturnsAsync((Movie)null);
+            _mockUnitOfWork.Setup(x => x.Movies.GetByIdAsync(999)).ReturnsAsync((Movie?)null);
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(() => 
@@ -262,7 +262,7 @@ namespace SD_Sinema.Tests.Services
                 Duration = 140 
             };
 
-            _mockUnitOfWork.Setup(x => x.Movies.GetByIdAsync(0)).ReturnsAsync((Movie)null);
+            _mockUnitOfWork.Setup(x => x.Movies.GetByIdAsync(0)).ReturnsAsync((Movie?)null);
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(() => 

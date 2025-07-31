@@ -20,8 +20,8 @@ namespace SD_Sinema.Core.Entities
         [StringLength(100)]
         public string? Cast { get; set; }
         
-        [StringLength(50)]
-        public string? Genre { get; set; }
+        public int? GenreId { get; set; }
+        public virtual Genre? Genre { get; set; }
         
         [StringLength(10)]
         public string? AgeRating { get; set; }

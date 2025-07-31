@@ -5,6 +5,7 @@ namespace SD_Sinema.Core.Interfaces
     public interface IRepository<T> where T : BaseEntity
     {
         Task<IEnumerable<T>> GetAllAsync();
+        Task<IEnumerable<T>> GetAllAsync(Func<T, bool> predicate);
         Task<T?> GetByIdAsync(int id);
         Task<T> AddAsync(T entity);
         Task<T> UpdateAsync(T entity);

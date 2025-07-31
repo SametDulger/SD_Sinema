@@ -6,6 +6,8 @@ namespace SD_Sinema.Business.DTOs
         public int SalonId { get; set; }
         public string RowNumber { get; set; } = string.Empty;
         public int SeatNumber { get; set; }
+        public int? SeatTypeId { get; set; }
+        public string? SeatTypeName { get; set; }
         public bool IsActive { get; set; }
         public string SalonName { get; set; } = string.Empty;
         public DateTime CreatedDate { get; set; }
@@ -16,7 +18,8 @@ namespace SD_Sinema.Business.DTOs
         public int SalonId { get; set; }
         public string SeatNumber { get; set; } = string.Empty;
         public int RowNumber { get; set; }
-        public string SeatType { get; set; } = string.Empty;
+        public int? SeatTypeId { get; set; }
+        public bool IsActive { get; set; } = true;
     }
 
     public class UpdateSeatDto
@@ -25,6 +28,7 @@ namespace SD_Sinema.Business.DTOs
         public int SalonId { get; set; }
         public string SeatNumber { get; set; } = string.Empty;
         public int RowNumber { get; set; }
-        public string SeatType { get; set; } = string.Empty;
+        public int? SeatTypeId { get; set; }
+        public bool IsActive { get; set; }
     }
 } 

@@ -7,6 +7,7 @@ namespace SD_Sinema.Web.Models.DTOs
         public int SessionId { get; set; }
         public int SeatId { get; set; }
         public int TicketTypeId { get; set; }
+        public int? ReservationId { get; set; }
         public DateTime PurchaseDate { get; set; }
         public decimal Price { get; set; }
         public string Status { get; set; } = string.Empty;
@@ -24,7 +25,7 @@ namespace SD_Sinema.Web.Models.DTOs
 
     public class CreateTicketDto
     {
-        public int ReservationId { get; set; }
+        public int? ReservationId { get; set; }
         public string TicketNumber { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public DateTime PurchaseDate { get; set; }
@@ -40,7 +41,7 @@ namespace SD_Sinema.Web.Models.DTOs
     public class UpdateTicketDto
     {
         public int Id { get; set; }
-        public int ReservationId { get; set; }
+        public int? ReservationId { get; set; }
         public string TicketNumber { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public DateTime PurchaseDate { get; set; }

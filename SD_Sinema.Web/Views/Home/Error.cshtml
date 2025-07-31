@@ -2,8 +2,25 @@
     ViewData["Title"] = "Hata";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Hata</h1>
-    <p>Bir hata oluştu. Lütfen tekrar deneyin.</p>
-    <a href="@Url.Action("Index", "Home")" class="btn btn-primary">Ana Sayfaya Dön</a>
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+        <div class="card border-0 shadow">
+            <div class="card-body p-5 text-center">
+                <div class="mb-4">
+                    <i class="fas fa-exclamation-triangle fa-5x text-warning mb-3"></i>
+                    <h1 class="display-4 fw-bold text-danger mb-3">Hata!</h1>
+                    <p class="lead text-muted mb-4">Bir hata oluştu. Lütfen tekrar deneyin veya ana sayfaya dönün.</p>
+                </div>
+                
+                <div class="d-grid gap-3">
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-primary btn-lg">
+                        <i class="fas fa-home me-2"></i>Ana Sayfaya Dön
+                    </a>
+                    <button onclick="history.back()" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Geri Dön
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div> 

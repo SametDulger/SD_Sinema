@@ -1,49 +1,41 @@
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using SD_Sinema.Web.Models;
 using SD_Sinema.Web.Models.DTOs;
-using System.Text;
+using SD_Sinema.Web.Services;
 
 namespace SD_Sinema.Web.Controllers
 {
     public class SalonsController : Controller
     {
-        private readonly HttpClient _httpClient;
+        private readonly IApiService _apiService;
 
-        public SalonsController(IHttpClientFactory httpClientFactory)
+        public SalonsController(IApiService apiService)
         {
-            _httpClient = httpClientFactory.CreateClient("API");
+            _apiService = apiService;
         }
 
         public async Task<IActionResult> Index()
         {
             try
             {
-                var response = await _httpClient.GetAsync("api/salons");
-                if (response.IsSuccessStatusCode)
+                var salonDtos = await _apiService.GetAsync<List<SalonDto>>("api/salons");
+                
+                var salonViewModels = salonDtos?.Select(s => new SalonViewModel
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var salonDtos = JsonConvert.DeserializeObject<List<SalonDto>>(content);
-                    
-                    var salonViewModels = salonDtos?.Select(s => new SalonViewModel
-                    {
-                        Id = s.Id,
-                        Name = s.Name,
-                        Description = s.Description ?? string.Empty,
-                        Capacity = s.Capacity,
-                        IsActive = s.IsActive,
-                        CreatedAt = s.CreatedDate
-                    }).ToList() ?? new List<SalonViewModel>();
-                    
-                    return View(salonViewModels);
-                }
+                    Id = s.Id,
+                    Name = s.Name,
+                    Capacity = s.Capacity,
+                    Description = s.Description ?? string.Empty,
+                    IsActive = s.IsActive,
+                    CreatedAt = s.CreatedDate
+                }).ToList() ?? new List<SalonViewModel>();
+                
+                return View(salonViewModels);
             }
             catch
             {
-                // API bağlantı hatası
+                return View(new List<SalonViewModel>());
             }
-
-            return View(Enumerable.Empty<SalonViewModel>());
         }
 
         public IActionResult Create()
@@ -62,16 +54,18 @@ namespace SD_Sinema.Web.Controllers
                     {
                         Name = salonViewModel.Name,
                         Capacity = salonViewModel.Capacity,
-                        Description = salonViewModel.Description
+                        Description = salonViewModel.Description,
+                        IsActive = salonViewModel.IsActive
                     };
 
-                    var json = JsonConvert.SerializeObject(createSalonDto);
-                    var content = new StringContent(json, Encoding.UTF8, "application/json");
-                    var response = await _httpClient.PostAsync("api/salons", content);
-
-                    if (response.IsSuccessStatusCode)
+                    var result = await _apiService.PostAsync<SalonDto>("api/salons", createSalonDto);
+                    if (result != null)
                     {
                         return RedirectToAction(nameof(Index));
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("", "Salon oluşturulurken hata oluştu.");
                     }
                 }
                 catch
@@ -87,34 +81,26 @@ namespace SD_Sinema.Web.Controllers
         {
             try
             {
-                var response = await _httpClient.GetAsync($"api/salons/{id}");
-                if (response.IsSuccessStatusCode)
+                var salonDto = await _apiService.GetAsync<SalonDto>($"api/salons/{id}");
+                
+                if (salonDto == null)
+                    return NotFound();
+                
+                var salonViewModel = new SalonViewModel
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var salonDto = JsonConvert.DeserializeObject<SalonDto>(content);
-                    
-                    if (salonDto == null)
-                        return NotFound();
-                    
-                    var salonViewModel = new SalonViewModel
-                    {
-                        Id = salonDto.Id,
-                        Name = salonDto.Name,
-                        Description = salonDto.Description ?? string.Empty,
-                        Capacity = salonDto.Capacity,
-                        IsActive = salonDto.IsActive,
-                        CreatedAt = salonDto.CreatedDate
-                    };
-                    
-                    return View(salonViewModel);
-                }
+                    Id = salonDto.Id,
+                    Name = salonDto.Name,
+                    Capacity = salonDto.Capacity,
+                    Description = salonDto.Description ?? string.Empty,
+                    IsActive = salonDto.IsActive
+                };
+
+                return View(salonViewModel);
             }
             catch
             {
-                // API bağlantı hatası
+                return NotFound();
             }
-
-            return NotFound();
         }
 
         [HttpPost]
@@ -126,19 +112,20 @@ namespace SD_Sinema.Web.Controllers
                 {
                     var updateSalonDto = new UpdateSalonDto
                     {
-                        Id = id,
                         Name = salonViewModel.Name,
                         Capacity = salonViewModel.Capacity,
-                        Description = salonViewModel.Description
+                        Description = salonViewModel.Description,
+                        IsActive = salonViewModel.IsActive
                     };
 
-                    var json = JsonConvert.SerializeObject(updateSalonDto);
-                    var content = new StringContent(json, Encoding.UTF8, "application/json");
-                    var response = await _httpClient.PutAsync($"api/salons/{id}", content);
-
-                    if (response.IsSuccessStatusCode)
+                    var result = await _apiService.PutAsync<SalonDto>($"api/salons/{id}", updateSalonDto);
+                    if (result != null)
                     {
                         return RedirectToAction(nameof(Index));
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("", "Salon güncellenirken hata oluştu.");
                     }
                 }
                 catch
@@ -154,15 +141,46 @@ namespace SD_Sinema.Web.Controllers
         {
             try
             {
-                var response = await _httpClient.DeleteAsync($"api/salons/{id}?deletedBy=Admin&reason=Silme");
-                if (response.IsSuccessStatusCode)
+                var salonDto = await _apiService.GetAsync<SalonDto>($"api/salons/{id}");
+                
+                if (salonDto == null)
+                    return NotFound();
+                
+                var salonViewModel = new SalonViewModel
+                {
+                    Id = salonDto.Id,
+                    Name = salonDto.Name,
+                    Capacity = salonDto.Capacity,
+                    Description = salonDto.Description ?? string.Empty,
+                    IsActive = salonDto.IsActive
+                };
+
+                return View(salonViewModel);
+            }
+            catch
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpPost, ActionName("Delete")]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            try
+            {
+                var success = await _apiService.DeleteAsync($"api/salons/{id}?deletedBy=Admin&reason=Silme");
+                if (success)
                 {
                     return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Salon silinirken hata oluştu.");
                 }
             }
             catch
             {
-                // API bağlantı hatası
+                ModelState.AddModelError("", "Salon silinirken hata oluştu.");
             }
 
             return RedirectToAction(nameof(Index));
@@ -172,34 +190,27 @@ namespace SD_Sinema.Web.Controllers
         {
             try
             {
-                var response = await _httpClient.GetAsync($"api/salons/{id}");
-                if (response.IsSuccessStatusCode)
+                var salonDto = await _apiService.GetAsync<SalonDto>($"api/salons/{id}");
+                
+                if (salonDto == null)
+                    return NotFound();
+                
+                var salonViewModel = new SalonViewModel
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var salonDto = JsonConvert.DeserializeObject<SalonDto>(content);
-                    
-                    if (salonDto == null)
-                        return NotFound();
-                    
-                    var salonViewModel = new SalonViewModel
-                    {
-                        Id = salonDto.Id,
-                        Name = salonDto.Name,
-                        Description = salonDto.Description ?? string.Empty,
-                        Capacity = salonDto.Capacity,
-                        IsActive = salonDto.IsActive,
-                        CreatedAt = salonDto.CreatedDate
-                    };
-                    
-                    return View(salonViewModel);
-                }
+                    Id = salonDto.Id,
+                    Name = salonDto.Name,
+                    Capacity = salonDto.Capacity,
+                    Description = salonDto.Description ?? string.Empty,
+                    IsActive = salonDto.IsActive,
+                    CreatedAt = salonDto.CreatedDate
+                };
+
+                return View(salonViewModel);
             }
             catch
             {
-                // API bağlantı hatası
+                return NotFound();
             }
-
-            return NotFound();
         }
     }
 } 

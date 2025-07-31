@@ -1,13 +1,20 @@
 using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
+using SD_Sinema.Web.Services;
+using SD_Sinema.Web.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllersWithViews()
-    .AddRazorRuntimeCompilation();
-
-builder.Services.AddHttpClient("API", client =>
+builder.Services.AddControllersWithViews(options =>
 {
-    client.BaseAddress = new Uri("http://localhost:5000/");
+    options.Filters.Add<AuthenticationFilter>();
+})
+.AddRazorRuntimeCompilation();
+
+// Configure HTTP Client for API communication
+builder.Services.AddHttpClient<IApiService, ApiService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000/");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
 builder.Services.AddSession(options =>

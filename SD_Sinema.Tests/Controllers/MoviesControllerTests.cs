@@ -75,7 +75,7 @@ namespace SD_Sinema.Tests.Controllers
         public async Task GetById_WithInvalidId_ShouldReturnNotFound()
         {
             // Arrange
-            _mockMovieService.Setup(x => x.GetByIdAsync(999)).ReturnsAsync((MovieDto)null);
+            _mockMovieService.Setup(x => x.GetByIdAsync(999)).ReturnsAsync((MovieDto?)null);
 
             // Act
             var result = await _controller.GetById(999);
@@ -88,7 +88,7 @@ namespace SD_Sinema.Tests.Controllers
         public async Task GetById_WithZeroId_ShouldReturnNotFound()
         {
             // Arrange
-            _mockMovieService.Setup(x => x.GetByIdAsync(0)).ReturnsAsync((MovieDto)null);
+            _mockMovieService.Setup(x => x.GetByIdAsync(0)).ReturnsAsync((MovieDto?)null);
 
             // Act
             var result = await _controller.GetById(0);
@@ -153,7 +153,7 @@ namespace SD_Sinema.Tests.Controllers
                 .ThrowsAsync(new ArgumentNullException("createMovieDto"));
 
             // Act
-            var result = await _controller.Create(null);
+            var result = await _controller.Create(null!);
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
@@ -220,7 +220,7 @@ namespace SD_Sinema.Tests.Controllers
                 .ThrowsAsync(new ArgumentNullException("updateMovieDto"));
 
             // Act
-            var result = await _controller.Update(1, null);
+            var result = await _controller.Update(1, null!);
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);

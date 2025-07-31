@@ -12,7 +12,9 @@ namespace SD_Sinema.Data.Context
         public DbSet<User> Users { get; set; }
         public DbSet<Salon> Salons { get; set; }
         public DbSet<Seat> Seats { get; set; }
+        public DbSet<SeatType> SeatTypes { get; set; }
         public DbSet<Movie> Movies { get; set; }
+        public DbSet<Genre> Genres { get; set; }
         public DbSet<Session> Sessions { get; set; }
         public DbSet<TicketType> TicketTypes { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
@@ -29,12 +31,38 @@ namespace SD_Sinema.Data.Context
                 entity.Property(e => e.Password).IsRequired();
             });
 
+            modelBuilder.Entity<Genre>(entity =>
+            {
+                entity.HasIndex(e => e.Name).IsUnique();
+                entity.Property(e => e.Name).IsRequired();
+            });
+
+            modelBuilder.Entity<SeatType>(entity =>
+            {
+                entity.HasIndex(e => e.Name).IsUnique();
+                entity.Property(e => e.Name).IsRequired();
+                entity.Property(e => e.PriceMultiplier).HasColumnType("decimal(5,2)");
+            });
+
+            modelBuilder.Entity<Movie>(entity =>
+            {
+                entity.HasOne(e => e.Genre)
+                    .WithMany(g => g.Movies)
+                    .HasForeignKey(e => e.GenreId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
             modelBuilder.Entity<Seat>(entity =>
             {
                 entity.HasOne(e => e.Salon)
                     .WithMany(s => s.Seats)
                     .HasForeignKey(e => e.SalonId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.SeatType)
+                    .WithMany(st => st.Seats)
+                    .HasForeignKey(e => e.SeatTypeId)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
 
             modelBuilder.Entity<Session>(entity =>

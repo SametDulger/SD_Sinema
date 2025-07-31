@@ -19,17 +19,7 @@ namespace SD_Sinema.Tests.Integration
         {
             _factory = factory.WithWebHostBuilder(builder =>
             {
-                builder.ConfigureServices(services =>
-                {
-                    var sp = services.BuildServiceProvider();
-
-                    using (var scope = sp.CreateScope())
-                    {
-                        var scopedServices = scope.ServiceProvider;
-                        var db = scopedServices.GetRequiredService<SinemaDbContext>();
-                        db.Database.EnsureCreated();
-                    }
-                });
+                builder.UseSetting("environment", "Test");
             });
 
             var scope = _factory.Services.CreateScope();
